@@ -1,0 +1,222 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ master, develop, refactor-* ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pylint black isort mypy bandit
+    
+    - name: Lint with flake8
+      run: |
+        # List all Python files to lint
+        echo "Linting Python files..."
+        
+        # flake8 configuration
+        flake8 . \
+          --count \
+          --select=E9,F63,F7,F82 \
+          --show-source \
+          --statistics \
+          --exclude=.git,__pycache__,.venv,venv,node_modules,.submodules \
+          --ignore=E203,W503,W504 \
+          --max-line-length=120
+    
+    - name: Check formatting with black
+      run: |
+        echo "Checking code formatting..."
+        black --check . --exclude="\.venv|venv|\.submodules" 2>&1 | head -50 || echo "Note: Some formatting issues found"
+    
+    - name: Check import sorting with isort
+      run: |
+        echo "Checking import sorting..."
+        isort --check-only . --skip-glob="*.venv*" --skip-glob="venv" 2>&1 | head -50 || echo "Note: Some import ordering issues found"
+    
+    - name: Security check with bandit
+      run: |
+        echo "Running security checks..."
+        bandit -r . \
+          --exclude ".venv,venv,.git,__pycache__" \
+          --skip B101,B601,B607 \
+          -f json -o bandit-report.json 2>/dev/null || true
+        
+        # Show summary if issues found
+        if [ -f bandit-report.json ]; then
+          python -c "
+          import json
+          with open('bandit-report.json') as f:
+              report = json.load(f)
+          if report.get('results'):
+              print(f\"Found {len(report['results'])} potential security issues\")
+          "
+        fi
+    
+    - name: Type checking with mypy
+      run: |
+        echo "Running type checks..."
+        
+        # Find all app main.py files
+        find . -path "./app-*/main.py" -type f | while read f; do
+          echo "Checking types in $f..."
+          mypy "$f" --ignore-missing-imports --allow-incomplete-defs 2>&1 | head -20 || true
+        done
+    
+    - name: Find TODO/FIXME comments
+      run: |
+        echo "Searching for TODO/FIXME comments..."
+        grep -r "TODO\|FIXME" . \
+          --include="*.py" \
+          --exclude-dir=.git \
+          --exclude-dir=__pycache__ \
+          --exclude-dir=.venv \
+          --exclude-dir=venv \
+          | head -20 || echo "No TODO/FIXME comments found"
+    
+    - name: Check for unused imports
+      run: |
+        echo "Checking for unused imports..."
+        
+        python -c "
+        import ast
+        import os
+        import glob
+        
+        unused_imports = []
+        
+        for py_file in glob.glob('app-*/main.py'):
+            try:
+                with open(py_file) as f:
+                    tree = ast.parse(f.read())
+                
+                # Extract imports
+                imports = {}
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Import):
+                        for alias in node.names:
+                            imports[alias.asname or alias.name] = py_file
+                    elif isinstance(node, ast.ImportFrom):
+                        if node.module:
+                            for alias in node.names:
+                                imports[alias.asname or alias.name] = py_file
+                
+                # Extract names used
+                used = set()
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Name):
+                        used.add(node.id)
+                    elif isinstance(node, ast.Attribute):
+                        used.add(node.attr)
+                
+                # Check for unused
+                for imp, file in imports.items():
+                    if imp not in used and not imp.startswith('_'):
+                        unused_imports.append((file, imp))
+            except:
+                pass
+        
+        if unused_imports:
+            print('⚠ Potentially unused imports found:')
+            for file, imp in unused_imports[:10]:
+                print(f'  {file}: {imp}')
+        else:
+            print('✓ No obvious unused imports detected')
+        "
+
+  dependencies:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Check for dependency issues
+      run: |
+        python -c "
+        import os
+        import json
+        
+        # Check all environment.yml files
+        print('Checking dependency files...')
+        
+        for env_file in ['app-bdf2mne/environment.yml', 'app-fif2mne/environment.yml', 'brainlife_utils/environment.yml']:
+            if os.path.exists(env_file):
+                print(f'✓ Found {env_file}')
+            else:
+                print(f'✗ Missing {env_file}')
+        
+        # Check for version conflicts
+        print('\nChecking MNE-Python dependency...')
+        
+        for py_file in ['app-ICA-fit/main.py', 'app-epoch/main.py']:
+            if os.path.exists(py_file):
+                with open(py_file) as f:
+                    content = f.read()
+                    if 'import mne' in content:
+                        print(f'✓ {py_file} imports MNE')
+        "
+
+  docstring-coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Check docstring coverage
+      run: |
+        python -c "
+        import ast
+        import os
+        import glob
+        
+        print('Docstring Coverage Report')
+        print('=' * 50)
+        
+        for py_file in glob.glob('app-*/main.py') + glob.glob('brainlife_utils/*.py'):
+            with open(py_file) as f:
+                tree = ast.parse(f.read())
+            
+            # Count functions and classes
+            functions = sum(1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef))
+            classes = sum(1 for node in ast.walk(tree) if isinstance(node, ast.ClassDef))
+            
+            # Count documented
+            documented = sum(1 for node in ast.walk(tree) 
+                           if (isinstance(node, (ast.FunctionDef, ast.ClassDef)) 
+                           and ast.get_docstring(node)))
+            
+            total_items = functions + classes
+            if total_items > 0:
+                coverage = (documented / total_items) * 100
+                status = '✓' if coverage >= 80 else '⚠'
+                print(f'{status} {py_file}: {coverage:.0f}% ({documented}/{total_items})')
+        "

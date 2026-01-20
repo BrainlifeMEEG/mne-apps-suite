@@ -204,7 +204,12 @@ fixtures/
 
 # CI/CD
 .travis.yml
-.github/
+# Note: .github/ is allowed for workflows - see negation patterns below
+
+# Re-enable .github/workflows/ for CI/CD configuration
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
 
 # ============================================================================
 # Large Files & Archives

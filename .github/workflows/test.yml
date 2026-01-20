@@ -1,0 +1,170 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ master, develop, refactor-* ]
+  pull_request:
+    branches: [ master, develop ]
+  schedule:
+    # Run tests weekly to catch dependency issues
+    - cron: '0 0 * * 0'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mne[data] matplotlib pytest pytest-cov flake8 black isort mypy
+    
+    - name: Lint with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+    
+    - name: Check code formatting with black
+      run: |
+        black --check . --diff 2>/dev/null || true
+    
+    - name: Check import sorting with isort
+      run: |
+        isort --check-only . 2>/dev/null || true
+    
+    - name: Test with pytest
+      run: |
+        # Run tests in each app directory if tests exist
+        for app_dir in app-*/; do
+          if [ -d "$app_dir/tests" ]; then
+            echo "Testing $app_dir..."
+            pytest "$app_dir/tests" -v --tb=short --cov="${app_dir%/}" || true
+          fi
+        done
+    
+    - name: Validate Python syntax
+      run: |
+        python -m py_compile $(find . -name "*.py" -path "*/app-*/main.py" -o -path "*/brainlife_utils/*.py")
+
+  validate-configs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Validate JSON configs
+      run: |
+        python -c "
+        import json
+        import glob
+        import sys
+        
+        errors = []
+        for config_file in glob.glob('*/config.json'):
+            try:
+                with open(config_file) as f:
+                    json.load(f)
+                print(f'✓ {config_file}')
+            except json.JSONDecodeError as e:
+                errors.append(f'✗ {config_file}: {e}')
+                print(f'✗ {config_file}: {e}')
+        
+        if errors:
+            sys.exit(1)
+        "
+    
+    - name: Validate .gitmodules
+      run: |
+        python -c "
+        import configparser
+        import sys
+        
+        config = configparser.ConfigParser()
+        config.read('.gitmodules')
+        
+        print(f'Total submodules: {len(config.sections())}')
+        for section in config.sections():
+            path = config.get(section, 'path')
+            url = config.get(section, 'url')
+            print(f'  {section}: {path} -> {url}')
+        "
+
+  check-documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    
+    - name: Check for required documentation
+      run: |
+        files_to_check=(
+          "README.md"
+          "REFACTORING_STATUS.md"
+          ".copilot-instructions.md"
+          "brainlife_utils/README.md"
+        )
+        
+        missing_files=()
+        for file in "${files_to_check[@]}"; do
+          if [ ! -f "$file" ]; then
+            missing_files+=("$file")
+          else
+            echo "✓ $file exists"
+          fi
+        done
+        
+        if [ ${#missing_files[@]} -gt 0 ]; then
+          echo "Missing documentation files:"
+          for file in "${missing_files[@]}"; do
+            echo "  - $file"
+          done
+          exit 1
+        fi
+    
+    - name: Validate README structure
+      run: |
+        python -c "
+        import re
+        
+        with open('README.md') as f:
+            content = f.read()
+        
+        required_sections = [
+            'Quick Start',
+            'Repository Structure',
+            'App Categories',
+            'Shared Utilities',
+            'Development'
+        ]
+        
+        for section in required_sections:
+            if f'## {section}' not in content and f'# {section}' not in content:
+                print(f'⚠ Missing section: {section}')
+            else:
+                print(f'✓ Section found: {section}')
+        "
