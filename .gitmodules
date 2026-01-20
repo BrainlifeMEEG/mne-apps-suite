@@ -4,28 +4,28 @@
 # Data Conversion Apps (Convert various formats to MNE .fif files)
 # ============================================================================
 
-[submodule "app_bdf2mne"]
-	path = app_bdf2mne
-	url = https://github.com/BrainlifeMEEG/app_bdf2mne.git
+[submodule "app-bdf2mne"]
+	path = app-bdf2mne
+	url = https://github.com/BrainlifeMEEG/app-bdf2mne.git
 
-[submodule "app_brainvision2mne"]
-	path = app_brainvision2mne
+[submodule "app-brainvision2mne"]
+	path = app-brainvision2mne
 	url = https://github.com/BrainlifeMEEG/app-brainvision2mne.git
 
-[submodule "app_ctf2mne"]
-	path = app_ctf2mne
+[submodule "app-ctf2mne"]
+	path = app-ctf2mne
 	url = https://github.com/BrainlifeMEEG/app-ctf2mne.git
 
-[submodule "app_edf2mne"]
-	path = app_edf2mne
+[submodule "app-edf2mne"]
+	path = app-edf2mne
 	url = https://github.com/guiomar/app-edf2mne.git
 
-[submodule "app_eeglab2mne"]
-	path = app_eeglab2mne
+[submodule "app-eeglab2mne"]
+	path = app-eeglab2mne
 	url = https://github.com/guiomar/app-eeglab2mne.git
 
-[submodule "app_fif2mne"]
-	path = app_fif2mne
+[submodule "app-fif2mne"]
+	path = app-fif2mne
 	url = https://github.com/guiomar/app-fif2mne.git
 
 [submodule "app-egi2mne"]
