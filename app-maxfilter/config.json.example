@@ -1,0 +1,19 @@
+{
+    "fif": "/network/lustre/iss01/home/aurore.bussalb/Repositories/test_snr/data/subject_1/bad_channels_1.fif",
+    "calibration": null,
+    "crosstalk": null,
+    "destination": null,
+    "headshape": null,
+    "param_int_order": 8,
+    "param_ext_order": 3,
+    "param_st_duration": null,
+    "param_st_correlation": 0.98,
+    "param_coord_frame": "head",
+    "param_regularize": "in",
+    "param_ignore_ref": false,
+    "param_bad_condition": "error",
+    "param_st_fixed": true,
+    "param_st_only": false,
+    "param_mag_scale": 100.0,
+    "param_skip_by_annotation": ["edge", "bad_acq_skip"]
+}
