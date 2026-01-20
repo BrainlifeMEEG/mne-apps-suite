@@ -1,0 +1,33 @@
+[flake8]
+# Max line length (matching black)
+max-line-length = 120
+
+# Ignore specific error codes
+# E203: Whitespace before ':'
+# W503: Line break before binary operator
+# W504: Line break after binary operator
+ignore = E203,W503,W504
+
+# Exclude directories
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .mypy_cache,
+    .pytest_cache,
+    node_modules
+
+# Per-file ignores
+per-file-ignores =
+    __init__.py:F401
+
+# Complexity
+max-complexity = 10
+
+# Docstring convention
+docstring-convention = google
