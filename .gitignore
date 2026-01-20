@@ -1,0 +1,235 @@
+# Brainlife.io App Suite - Git Ignore File
+
+# ============================================================================
+# Python
+# ============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ============================================================================
+# IDE & Editor
+# ============================================================================
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+.vim/
+*.swp
+*.swo
+*~
+.*.swp
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# OS & System Files
+# ============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+
+# ============================================================================
+# Data & Output (App-specific)
+# ============================================================================
+
+# Output directories - DO NOT commit generated data
+out_dir/
+out_figs/
+out_report/
+*.fif
+*.fif.gz
+*.edf
+*.eeg
+*.set
+*.cnt
+*.bdf
+
+# Product files - These are generated at runtime
+product.json
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================================================
+# Brainlife.io Specific
+# ============================================================================
+
+# Runtime config files with actual data paths
+config.json
+
+# Singularity/Docker cache
+.singularity/
+.docker/
+
+# Cluster job logs
+*.o
+*.e
+*.po*
+
+# PBS/SLURM output
+*.PBS.o*
+*.PBS.e*
+*.SLURM.o*
+*.SLURM.e*
+
+# ============================================================================
+# Documentation & Generated Files
+# ============================================================================
+
+# Sphinx documentation
+docs/_build/
+
+# Generated API documentation
+*.rst~
+
+# ============================================================================
+# Development & Testing
+# ============================================================================
+
+# Test data
+test_data/
+fixtures/
+.test/
+
+# Debugging
+*.pdb
+.breakpoints
+
+# CI/CD
+.travis.yml
+.github/
+
+# ============================================================================
+# Large Files & Archives
+# ============================================================================
+
+# Compiled binaries
+*.bin
+*.exe
+*.dll
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# ============================================================================
+# Local Configuration - Override with local .git/info/exclude if needed
+# ============================================================================
+
+# Local test scripts
+test_local_*.py
+local_config.json
+
+# User-specific files
+.env.local
+.env.*.local
