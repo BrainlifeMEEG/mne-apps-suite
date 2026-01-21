@@ -36,9 +36,9 @@
 # Preprocessing & Channel Operations
 # ============================================================================
 
-[submodule "app-add_flat_chan"]
-	path = app-add_flat_chan
-	url = https://github.com/BrainlifeMEEG/app-add_flat_chan.git
+[submodule "app-add-flat-chan"]
+	path = app-add-flat-chan
+	url = https://github.com/BrainlifeMEEG/app-add-flat-chan.git
 
 [submodule "app-add-montage"]
 	path = app-add-montage
