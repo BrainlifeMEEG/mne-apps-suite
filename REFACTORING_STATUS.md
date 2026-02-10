@@ -37,12 +37,12 @@ The following apps are to be refactored (in suggested priority order):
 - [ ] app-ICA-plot - Visualize ICA components This app still belongs to Saeed. Need to ask him to change ownership of the app on Brainlife.io
 
 ### Data Conversion Apps
-- [ ] app-bdf2mne - Biodat BDF to MNE conversion
-- [ ] app-brainvision2mne - Brain Vision to MNE conversion
-- [ ] app-ctf2mne - CTF MEG to MNE conversion
-- [ ] app-edf2mne - EDF to MNE conversion
-- [ ] app-eeglab2mne - EEGLAB to MNE conversion
-- [ ] app-fif2mne - FIF file refinement
+- [X] app-bdf2mne - Biodat BDF to MNE conversion
+- [X] app-brainvision2mne - Brain Vision to MNE conversion
+- [X] app-ctf2mne - CTF MEG to MNE conversion
+- [X] app-edf2mne - EDF to MNE conversion
+- [X] app-eeglab2mne - EEGLAB to MNE conversion
+- [X] app-fif2mne - FIF file refinement
 
 ### Channel Operations 
 - [ ] app-add_flat_chan - Add flat channels
