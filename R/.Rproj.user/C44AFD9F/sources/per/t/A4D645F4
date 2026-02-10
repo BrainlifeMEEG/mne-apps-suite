@@ -1,0 +1,26 @@
+{
+    "id": "A4D645F4",
+    "path": "~/ownCloud/Lab/00-Projects/Brainlife/BRAINLIFE/code/R/mne2json.R",
+    "project_path": "mne2json.R",
+    "type": "r_source",
+    "hash": "2726700511",
+    "contents": "",
+    "dirty": false,
+    "created": 1676457921501.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "5,69",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1680711565,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1680711565740,
+    "read_only": false,
+    "read_only_alternatives": []
+}
