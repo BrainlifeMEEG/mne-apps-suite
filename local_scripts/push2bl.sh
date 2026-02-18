@@ -44,6 +44,11 @@ in_dir='/home/maximilien.chaumon/liensNet/analyse/BRAINLIFE/code/local_scripts/A
 files=`ls $in_dir`
 for file in $files
 do
+    # Skip files with _Face1 and non-.txt files
+    if [[ $file == *"_Face1"* ]] || [[ $file != *.txt ]]; then
+        continue
+    fi
+    
     # from file, extract subject, task, run
     subject=`echo $file | cut -d'_' -f1`
     task=`echo $file | cut -d'_' -f2`

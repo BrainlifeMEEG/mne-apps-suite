@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
 Extract analysis data from AnalysisSheet.txt files.
-Creates individual output files per sample:
-- S##_T##_pass1_bad_epochs.txt: pass 1 rejected epoch indices (0-indexed, comma-separated)
-- S##_T##_pass2_bad_epochs.txt: pass 2 rejected epoch indices (0-indexed, comma-separated)
-- S##_T##_bad_channels.tsv: bad channel information (tab-separated)
-- S##_T##_bad_channels.txt: bad channel names (comma-separated)
+Creates individual output files per sample in two directories:
+- AggregatedChannelDrop/: Bad channel information
+  - S##_T##.tsv: tab-separated with name and status columns
+  - S##_T##.txt: comma-separated channel names
+- AggregatedTrialDrop/: Rejected epoch indices (0-indexed, comma-separated)
+  - S##_T##_Firstpass.txt: pass 1 rejected epoch indices
+  - S##_T##_Secondpass.txt: pass 2 rejected epoch indices
 """
 
 import re
@@ -115,7 +117,7 @@ def extract_subject_task(filepath: str) -> tuple:
 def create_bad_channels_file(bad_channels: List[int], subject: str, task: str, output_dir: Path):
     """Create TSV file with bad channels information."""
     # Create TSV file
-    filename_tsv = output_dir / f"S{subject}_{task}_bad_channels.tsv"
+    filename_tsv = output_dir / f"S{subject}_{task}.tsv"
     
     with open(filename_tsv, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['name', 'status'], delimiter='\t')
@@ -128,7 +130,7 @@ def create_bad_channels_file(bad_channels: List[int], subject: str, task: str, o
             })
     
     # Create comma-separated text file
-    filename_txt = output_dir / f"S{subject}_{task}_bad_channels.txt"
+    filename_txt = output_dir / f"S{subject}_{task}.txt"
     
     with open(filename_txt, 'w') as f:
         if bad_channels:
@@ -138,7 +140,7 @@ def create_bad_channels_file(bad_channels: List[int], subject: str, task: str, o
 
 def create_bad_epochs_file_pass1(indices: List[int], subject: str, task: str, output_dir: Path):
     """Create text file with pass 1 rejected epoch indices (0-indexed)."""
-    filename = output_dir / f"S{subject}_{task}_pass1_bad_epochs.txt"
+    filename = output_dir / f"S{subject}_{task}_Firstpass.txt"
     
     with open(filename, 'w') as f:
         if indices:
@@ -149,7 +151,7 @@ def create_bad_epochs_file_pass1(indices: List[int], subject: str, task: str, ou
 
 def create_bad_epochs_file_pass2(indices: List[int], subject: str, task: str, output_dir: Path):
     """Create text file with pass 2 rejected epoch indices (0-indexed)."""
-    filename = output_dir / f"S{subject}_{task}_pass2_bad_epochs.txt"
+    filename = output_dir / f"S{subject}_{task}_Secondpass.txt"
     
     with open(filename, 'w') as f:
         if indices:
@@ -158,7 +160,7 @@ def create_bad_epochs_file_pass2(indices: List[int], subject: str, task: str, ou
             f.write(','.join(map(str, zero_indexed)))
 
 
-def process_file(filepath: str, output_dir: Path) -> Dict[str, Any]:
+def process_file(filepath: str, channels_dir: Path, epochs_dir: Path) -> Dict[str, Any]:
     """Process a single AnalysisSheet.txt file."""
     try:
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
@@ -173,9 +175,9 @@ def process_file(filepath: str, output_dir: Path) -> Dict[str, Any]:
         
         if subject and task:
             # Create output files
-            create_bad_channels_file(bad_channels, subject, task, output_dir)
-            create_bad_epochs_file_pass1(pass1['rejected_indices'] or [], subject, task, output_dir)
-            create_bad_epochs_file_pass2(pass2['rejected_indices'] or [], subject, task, output_dir)
+            create_bad_channels_file(bad_channels, subject, task, channels_dir)
+            create_bad_epochs_file_pass1(pass1['rejected_indices'] or [], subject, task, epochs_dir)
+            create_bad_epochs_file_pass2(pass2['rejected_indices'] or [], subject, task, epochs_dir)
         
         return {
             'filepath': filepath,
@@ -197,20 +199,22 @@ def process_file(filepath: str, output_dir: Path) -> Dict[str, Any]:
 def main():
     """Main function to process all files."""
     base_path = Path.home() / 'liensNet/analyse/BRAINLIFE/datasets/Latinus Data'
-    output_dir = Path.cwd() / 'bad_epochs_channels'
-    output_dir.mkdir(exist_ok=True)
+    channels_dir = Path.cwd() / 'AggregatedChannelDrop'
+    epochs_dir = Path.cwd() / 'AggregatedTrialDrop'
+    channels_dir.mkdir(exist_ok=True)
+    epochs_dir.mkdir(exist_ok=True)
     
     # Find all AnalysisSheet.txt files matching the pattern
     pattern = str(base_path / 'S*/*AnalysisExplanation/*AnalysisSheet.txt')
     files = sorted(glob.glob(pattern))
     
     print(f"Found {len(files)} files")
-    print(f"Output directory: {output_dir}\n")
+    print(f"Output directories: {channels_dir}, {epochs_dir}\n")
     
     results = []
     
     for filepath in files:
-        data = process_file(filepath, output_dir)
+        data = process_file(filepath, channels_dir, epochs_dir)
         results.append(data)
         
         # Print summary for each file
@@ -227,18 +231,25 @@ def main():
             print()
     
     # Save summary to JSON
-    output_json = output_dir / 'summary.json'
+    output_json = channels_dir / 'summary.json'
     with open(output_json, 'w') as f:
         json.dump(results, f, indent=2)
     print(f"Summary saved to {output_json}")
     
+    # Remove old directories
+    import shutil
+    for old_dir in [Path.cwd() / 'bad_channels', Path.cwd() / 'bad_epochs', Path.cwd() / 'bad_epochs_channels']:
+        if old_dir.exists():
+            shutil.rmtree(old_dir)
+            print(f"Removed old directory: {old_dir}")
+    
     # Print statistics
     successful = len([r for r in results if 'error' not in r])
     print(f"\nProcessed {successful}/{len(files)} files successfully")
-    print(f"Generated {successful} S##_T##_pass1_bad_epochs.txt files")
-    print(f"Generated {successful} S##_T##_pass2_bad_epochs.txt files")
-    print(f"Generated {successful} S##_T##_bad_channels.tsv files")
-    print(f"Generated {successful} S##_T##_bad_channels.txt files")
+    print(f"Generated {successful} S##_T##_Firstpass.txt files in AggregatedTrialDrop/")
+    print(f"Generated {successful} S##_T##_Secondpass.txt files in AggregatedTrialDrop/")
+    print(f"Generated {successful} S##_T##.tsv files in AggregatedChannelDrop/")
+    print(f"Generated {successful} S##_T##.txt files in AggregatedChannelDrop/")
 
 
 if __name__ == '__main__':
