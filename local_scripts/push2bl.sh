@@ -44,24 +44,36 @@ in_dir='/home/maximilien.chaumon/liensNet/analyse/BRAINLIFE/code/local_scripts/A
 files=`ls $in_dir`
 for file in $files
 do
-    # Skip files with _Face1 and non-.txt files
-    if [[ $file == *"_Face1"* ]] || [[ $file != *.txt ]]; then
+    # Skip files with _Face1 and non-.tsv files
+    if [[ $file == *"_Face1"* ]] || [[ $file != *.tsv ]]; then
         continue
     fi
     
     # from file, extract subject, task, run
     subject=`echo $file | cut -d'_' -f1`
-    task=`echo $file | cut -d'_' -f2`
+    task_num=`echo $file | cut -d'_' -f2 | cut -d'.' -f1`
+    
+    # Convert T1/T2 to Task1/Task2
+    if [ "$task_num" == "T1" ]; then
+        task="Task1"
+    elif [ "$task_num" == "T2" ]; then
+        task="Task2"
+    else
+        task="$task_num"
+    fi
 
     # # if task is T2, skip
     # if [ $task == "T2" ]; then
     #     continue
     # fi
+    # verbose files to be uploaded
+    echo "### Uploading $file for subject $subject, task $task..."
     bl data upload \
     --project 655fc8c3b094062da64c7e2b \
     --datatype neuro/meg/fif-override \
     --tag bad-channels \
+    --tag $task \
     --desc "Bad channels for $subject $task" \
     --subject $subject \
-    --events $in_dir/$file
+    --channels $in_dir/$file
 done
