@@ -4,7 +4,6 @@ Extract analysis data from AnalysisSheet.txt files.
 Creates individual output files per sample in two directories:
 - AggregatedChannelDrop/: Bad channel information
   - S##_T##.tsv: tab-separated with name and status columns
-  - S##_T##.txt: comma-separated channel names
 - AggregatedTrialDrop/: Rejected epoch indices (0-indexed, comma-separated)
   - S##_T##_Firstpass.txt: pass 1 rejected epoch indices
   - S##_T##_Secondpass.txt: pass 2 rejected epoch indices
@@ -128,14 +127,6 @@ def create_bad_channels_file(bad_channels: List[int], subject: str, task: str, o
                 'name': f'E{channel_num}',
                 'status': 'bad'
             })
-    
-    # Create comma-separated text file
-    filename_txt = output_dir / f"S{subject}_{task}.txt"
-    
-    with open(filename_txt, 'w') as f:
-        if bad_channels:
-            channel_names = [f'E{ch}' for ch in bad_channels]
-            f.write(','.join(channel_names))
 
 
 def create_bad_epochs_file_pass1(indices: List[int], subject: str, task: str, output_dir: Path):
@@ -249,7 +240,6 @@ def main():
     print(f"Generated {successful} S##_T##_Firstpass.txt files in AggregatedTrialDrop/")
     print(f"Generated {successful} S##_T##_Secondpass.txt files in AggregatedTrialDrop/")
     print(f"Generated {successful} S##_T##.tsv files in AggregatedChannelDrop/")
-    print(f"Generated {successful} S##_T##.txt files in AggregatedChannelDrop/")
 
 
 if __name__ == '__main__':
