@@ -223,3 +223,6 @@
 [submodule "brainlife_utils"]
 	path = brainlife_utils
 	url = https://github.com/BrainlifeMEEG/brainlife_utils.git
+[submodule "app-plot-epochs"]
+	path = app-plot-epochs
+	url = ./app-plot-epochs
