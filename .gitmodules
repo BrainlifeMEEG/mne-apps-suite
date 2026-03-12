@@ -226,3 +226,6 @@
 [submodule "app-plot-epochs"]
 	path = app-plot-epochs
 	url = ./app-plot-epochs
+[submodule "app-meegflow"]
+	path = app-meegflow
+	url = ./app-meegflow

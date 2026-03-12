@@ -34,6 +34,7 @@ The following apps are to be refactored (in suggested priority order):
 - [X] app-ICA-apply - Apply ICA components
 - [X] app-ICA-apply-epo - Apply ICA on epochs
 - [X] app-drop-bad-epo - Drop bad epochs
+- [X] app-plot-epochs - Plot all epochs ERPs
 - [ ] app-ICA-plot - Visualize ICA components This app still belongs to Saeed. Need to ask him to change ownership of the app on Brainlife.io
 
 ### Data Conversion Apps
@@ -176,16 +177,24 @@ create_product_json(product_items)
 
 ## Recent Batch Refactorings (January 2026)
 
-### ICA Component Suite (5 apps)
-All 5 ICA apps have been refactored and pushed to their respective repositories on the `refactor-shared-utils` branch:
-- **app-ICA-apply** (BrainlifeMEEG owner): PR ready at https://github.com/BrainlifeMEEG/app-ICA-apply/pull/new/refactor-shared-utils
+### ICA Component Suite (5 apps) - ✅ COMPLETED
+All 5 ICA apps have been fully refactored and finalized with `brainlife_utils` submodule and helper.py removal:
+- **app-ICA-apply** (BrainlifeMEEG owner): ✅ Completed refactoring with submodule, helper.py removed, pushed to refactor-shared-utils branch
 - **app-ICA-fit** (dnacombo owner): Pushed to myorigin
-- **app-ICA-fit-epo** (dnacombo owner): Pushed to myorigin
-- **app-ICA-apply-epo** (dnacombo owner): Pushed to myorigin
+- **app-ICA-fit-epo** (dnacombo owner): Pushed to myorigin  
+- **app-ICA-apply-epo** (dnacombo owner): ✅ Completed refactoring with submodule, helper.py removed, pushed to refactor-shared-utils branch
 - **app-ICA-plot** (dnacombo owner): Pushed to myorigin
 
 ### Epoch Processing (1 app)
 - **app-drop-bad-epo** (BrainlifeMEEG owner): PR ready at https://github.com/BrainlifeMEEG/app-drop-bad-epo/pull/new/refactor-shared-utils
+
+### Latest Refactoring Completion (March 12, 2026)
+Both `app-ICA-apply` and `app-ICA-apply-epo` have been fully refactored following the 4-step process:
+1. ✅ Added brainlife_utils submodule
+2. ✅ Verified helper.py was not used in main.py imports
+3. ✅ Removed unused helper.py files
+4. ✅ Updated copyright year to 2026, product.json pattern, and README.md documentation
+5. ✅ Committed and pushed to remote repositories on refactor-shared-utils branch
 
 All refactorings follow the established 4-step process and include:
 - ✅ Module docstrings describing inputs/outputs
