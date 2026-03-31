@@ -217,8 +217,8 @@
 # ============================================================================
 
 [submodule "brainlife_utils"]
-	path = brainlife_utils
-	url = https://github.com/BrainlifeMEEG/brainlife_utils.git
+	path = BrainlifeMEEG_utils
+	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_utils.git
 [submodule "app-plot-epochs"]
 	path = plot-epochs
 	url = https://github.com/BrainlifeMEEG/plot-epochs.git
