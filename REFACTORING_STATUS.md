@@ -35,6 +35,7 @@ The following apps are to be refactored (in suggested priority order):
 - [X] app-ICA-apply-epo - Apply ICA on epochs
 - [X] app-drop-bad-epo - Drop bad epochs
 - [X] app-plot-epochs - Plot all epochs ERPs
+- [X] app-notch-filter - Notch filtering
 - [ ] app-ICA-plot - Visualize ICA components This app still belongs to Saeed. Need to ask him to change ownership of the app on Brainlife.io
 
 ### Data Conversion Apps

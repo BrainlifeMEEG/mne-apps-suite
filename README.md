@@ -168,9 +168,6 @@ See [REFACTORING_STATUS.md](REFACTORING_STATUS.md) for the current status of app
 git clone --recurse-submodules https://github.com/BrainlifeMEEG/mne-apps-suite.git
 cd mne-apps-suite
 
-# Install dependencies for an app
-cd app-epoch
-pip install -r requirements.txt  # if available
 ```
 
 ### Brainlife.io Deployment
@@ -240,14 +237,17 @@ We welcome contributions! Please:
 
 If you use these apps in research, please cite:
 
-```bibtex
-@software{brainlife_mne_apps,
-  title={Brainlife MNE Apps Suite},
-  author={Brainlife Team and Contributors},
-  year={2024},
-  url={https://github.com/BrainlifeMEEG}
+@article{Hayashi2024,
+  author  = {Hayashi, Soichi and Caron, Bradley A. and Heinsfeld, Anibal S. and others},
+  title   = {brainlife.io: a decentralized and open-source cloud platform to support neuroscience research},
+  journal = {Nature Methods},
+  year    = {2024},
+  volume  = {21},
+  number  = {5},
+  pages   = {809--813},
+  doi     = {10.1038/s41592-024-02237-2},
+  url     = {https://doi.org/10.1038/s41592-024-02237-2}
 }
-```
 
 And cite the MNE-Python library:
 
@@ -262,32 +262,35 @@ And cite the MNE-Python library:
 
 ## License
 
-All apps are licensed under their respective licenses. Most use open-source licenses compatible with MNE-Python and Brainlife.io.
+All apps are licensed under AGPLv3 or later, as stated in the license.txt file in this repository and the underlying app repositories.
 
-See individual app LICENSE files for details.
+This project uses the following third-party libraries:
+
+## Dependencies
+- **MNE-Python**
+  Copyright (c) 2011-2026 MNE-Python developers
+  Licensed under the 3-Clause BSD License.
+  (See https://mne.tools/stable/license.html for details)
 
 ## Support & Resources
 
 - **Brainlife.io Documentation**: https://brainlife.io/docs
 - **MNE-Python Documentation**: https://mne.tools/
 - **GitHub Issues**: Report bugs in individual app repositories
-- **Discussions**: Community support on Brainlife forums
+- **Discussions**: Community support on Brainlife forums on https://brainlife.slack.com
 
 ## Authors & Acknowledgments
 
 ### Core Team
-- Maximilien Chaumon (ICM, CNRS)
-- Franco Pestilli (Indiana University)
-- Brainlife.io development team
+- Maximilien Chaumon (https://github.com/dnacombo)
+- Guiomar Niso (https://github.com/guiomar)
+- Kami Salibayeva (https://github.com/KSalibay)
+- Saeed Zahran (https://github.com/zahransa/)
+- Aurore Bussalb (https://github.com/abussalb)
+- Franco Pestilli (https://github.com/francopestilli)
 
 ### Contributors
 See individual app repositories for detailed contributor lists.
-
-### Funding
-This project is supported by:
-- NIH (National Institutes of Health)
-- NSF (National Science Foundation)
-- International Brain Initiative
 
 ## Changelog
 
@@ -296,6 +299,9 @@ This project is supported by:
 - 14 apps refactored to use shared utilities
 - Comprehensive documentation
 - Git submodule organization
+
+### v1.1.0 (March 2026)
+- Updated documentation and license
 
 For detailed changes, see individual app repositories and REFACTORING_STATUS.md.
 
@@ -307,5 +313,5 @@ For detailed changes, see individual app repositories and REFACTORING_STATUS.md.
 
 ---
 
-**Last Updated**: January 20, 2026  
+**Last Updated**: March 20, 2026  
 **Repository**: https://github.com/BrainlifeMEEG/mne-apps-suite

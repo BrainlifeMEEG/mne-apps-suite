@@ -233,3 +233,4 @@ local_config.json
 # User-specific files
 .env.local
 .env.*.local
+.Rproj.user
