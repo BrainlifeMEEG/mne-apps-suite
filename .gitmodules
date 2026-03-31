@@ -6,15 +6,15 @@
 
 [submodule "app-bdf2mne"]
 	path = app-bdf2mne
-	url = https://github.com/BrainlifeMEEG/app-bdf2mne.git
+	url = https://github.com/BrainlifeMEEG/bdf2mne.git
 
 [submodule "app-brainvision2mne"]
 	path = app-brainvision2mne
-	url = https://github.com/BrainlifeMEEG/app-brainvision2mne.git
+	url = https://github.com/BrainlifeMEEG/brainvision2mne.git
 
 [submodule "app-ctf2mne"]
 	path = app-ctf2mne
-	url = https://github.com/BrainlifeMEEG/app-ctf2mne.git
+	url = https://github.com/BrainlifeMEEG/ctf2mne.git
 
 [submodule "app-edf2mne"]
 	path = app-edf2mne
@@ -30,7 +30,7 @@
 
 [submodule "app-egi2mne"]
 	path = app-egi2mne
-	url = https://github.com/BrainlifeMEEG/app-egi2mne.git
+	url = https://github.com/BrainlifeMEEG/egi2mne.git
 
 # ============================================================================
 # Preprocessing & Channel Operations
@@ -38,7 +38,7 @@
 
 [submodule "app-add-flat-chan"]
 	path = app-add-flat-chan
-	url = https://github.com/BrainlifeMEEG/app-add-flat-chan.git
+	url = https://github.com/BrainlifeMEEG/add-flat-chan.git
 
 [submodule "app-add-montage"]
 	path = app-add-montage
@@ -90,7 +90,7 @@
 
 [submodule "app-drop-bad-epo"]
 	path = app-drop-bad-epo
-	url = https://github.com/BrainlifeMEEG/app-drop-bad-epo.git
+	url = https://github.com/BrainlifeMEEG/drop-bad-epo.git
 
 [submodule "app-events"]
 	path = app-events
@@ -114,7 +114,7 @@
 
 [submodule "app-ICA-fit"]
 	path = app-ICA-fit
-	url = https://github.com/BrainlifeMEEG/app-ICA-fit.git
+	url = https://github.com/BrainlifeMEEG/ICA-fit.git
 
 [submodule "app-ICA-fit-epo"]
 	path = app-ICA-fit-epo
@@ -122,7 +122,7 @@
 
 [submodule "app-ICA-apply"]
 	path = app-ICA-apply
-	url = https://github.com/BrainlifeMEEG/app-ICA-apply.git
+	url = https://github.com/BrainlifeMEEG/ICA-apply.git
 
 [submodule "app-ICA-apply-epo"]
 	path = app-ICA-apply-epo
@@ -182,11 +182,11 @@
 
 [submodule "app-info-epo"]
 	path = app-info-epo
-	url = https://github.com/BrainlifeMEEG/app-info-epo.git
+	url = https://github.com/BrainlifeMEEG/info-epo.git
 
 [submodule "app-info-evoked"]
 	path = app-info-evoked
-	url = https://github.com/BrainlifeMEEG/app-info-evoked.git
+	url = https://github.com/BrainlifeMEEG/info-evoked.git
 
 # ============================================================================
 # Advanced Processing
@@ -198,11 +198,11 @@
 
 [submodule "app-maxfilter"]
 	path = app-maxfilter
-	url = https://github.com/BrainlifeMEEG/app-maxwell-filter.git
+	url = https://github.com/BrainlifeMEEG/maxwell-filter.git
 
 [submodule "app-make-watershed-bem"]
 	path = app-make-watershed-bem
-	url = https://github.com/BrainlifeMEEG/app-make-watershed-bem.git
+	url = https://github.com/BrainlifeMEEG/make-watershed-bem.git
 
 [submodule "app-mean-transformation-matrix"]
 	path = app-mean-transformation-matrix
@@ -225,7 +225,7 @@
 	url = https://github.com/BrainlifeMEEG/brainlife_utils.git
 [submodule "app-plot-epochs"]
 	path = app-plot-epochs
-	url = ./app-plot-epochs
+	url = https://github.com/BrainlifeMEEG/plot-epochs.git
 [submodule "app-meegflow"]
 	path = app-meegflow
-	url = ./app-meegflow
+	url = https://github.com/BrainlifeMEEG/meegflow.git
