@@ -52,9 +52,9 @@
 	path = interpolate-raw
 	url = https://github.com/KSalibay/app-interpolate-raw.git
 
-[submodule "app-mark_bad-raw"]
-	path = mark_bad-raw
-	url = https://github.com/dnacombo/app-mark_bad-raw.git
+[submodule "app-mark-bad-raw"]
+	path = mark-bad-raw
+	url = https://github.com/BrainlifeMEEG/mark-bad-raw.git
 
 # ============================================================================
 # Filtering & Preprocessing
