@@ -54,7 +54,7 @@
 
 [submodule "mark-bad-raw"]
 	path = mark-bad-raw
-	url = ./mark-bad-raw
+	url = https://github.com/BrainlifeMEEG/mark-bad-raw
 
 # ============================================================================
 # Filtering & Preprocessing
@@ -222,6 +222,6 @@
 [submodule "plot-epochs"]
 	path = plot-epochs
 	url = https://github.com/BrainlifeMEEG/plot-epochs.git
-[submodule "meegflow"]
-	path = meegflow
-	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_meegflow.git
+[submodule "meegflow-app"]
+	path = meegflow-app
+	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_meegflow-app
