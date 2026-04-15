@@ -4,31 +4,31 @@
 # Data Conversion Apps (Convert various formats to MNE .fif files)
 # ============================================================================
 
-[submodule "app-bdf2mne"]
+[submodule "bdf2mne"]
 	path = bdf2mne
 	url = https://github.com/BrainlifeMEEG/bdf2mne.git
 
-[submodule "app-brainvision2mne"]
+[submodule "brainvision2mne"]
 	path = brainvision2mne
 	url = https://github.com/BrainlifeMEEG/brainvision2mne.git
 
-[submodule "app-ctf2mne"]
+[submodule "ctf2mne"]
 	path = ctf2mne
 	url = https://github.com/BrainlifeMEEG/ctf2mne.git
 
-[submodule "app-edf2mne"]
+[submodule "edf2mne"]
 	path = edf2mne
-	url = https://github.com/guiomar/app-edf2mne.git
+	url = https://github.com/BrainlifeMEEG/edf2mne.git
 
-[submodule "app-eeglab2mne"]
+[submodule "eeglab2mne"]
 	path = eeglab2mne
-	url = https://github.com/guiomar/app-eeglab2mne.git
+	url = https://github.com/BrainlifeMEEG/eeglab2mne.git
 
-[submodule "app-fif2mne"]
+[submodule "fif2mne"]
 	path = fif2mne
-	url = https://github.com/guiomar/app-fif2mne.git
+	url = https://github.com/BrainlifeMEEG/fif2mne.git
 
-[submodule "app-egi2mne"]
+[submodule "egi2mne"]
 	path = egi2mne
 	url = https://github.com/BrainlifeMEEG/egi2mne.git
 
@@ -36,151 +36,151 @@
 # Preprocessing & Channel Operations
 # ============================================================================
 
-[submodule "app-add-flat-chan"]
+[submodule "add-flat-chan"]
 	path = add-flat-chan
 	url = https://github.com/BrainlifeMEEG/add-flat-chan.git
 
-[submodule "app-add-montage"]
+[submodule "add-montage"]
 	path = add-montage
-	url = https://github.com/KSalibay/app-add-montage.git
+	url = https://github.com/BrainlifeMEEG/add-montage.git
 
-[submodule "app-average-channels"]
+[submodule "average-channels"]
 	path = average-channels
-	url = https://github.com/guiomar/app-average-channels.git
+	url = https://github.com/BrainlifeMEEG/average-channels.git
 
-[submodule "app-interpolate-raw"]
+[submodule "interpolate-raw"]
 	path = interpolate-raw
-	url = https://github.com/KSalibay/app-interpolate-raw.git
+	url = https://github.com/BrainlifeMEEG/interpolate-raw.git
 
-[submodule "app-mark-bad-raw"]
+[submodule "mark-bad-raw"]
 	path = mark-bad-raw
-	url = https://github.com/BrainlifeMEEG/mark-bad-raw.git
+	url = ./mark-bad-raw
 
 # ============================================================================
 # Filtering & Preprocessing
 # ============================================================================
 
-[submodule "app-filter-raw"]
+[submodule "filter-raw"]
 	path = filter-raw
-	url = https://github.com/dnacombo/app-filter-raw.git
+	url = https://github.com/BrainlifeMEEG/filter-raw.git
 
-[submodule "app-filter-epo"]
+[submodule "filter-epo"]
 	path = filter-epo
-	url = https://github.com/dnacombo/app-filter-epo.git
+	url = https://github.com/BrainlifeMEEG/filter-epo.git
 
-[submodule "app-notch-filter"]
+[submodule "notch-filter"]
 	path = notch-filter
-	url = https://github.com/brainlife/app-notch-filter.git
+	url = https://github.com/BrainlifeMEEG/notch-filter.git
 
-[submodule "app-resampling"]
+[submodule "resampling"]
 	path = resampling
-	url = https://github.com/brainlife/app-resampling.git
+	url = https://github.com/BrainlifeMEEG/resampling.git
 
 # ============================================================================
 # Epoching & Events
 # ============================================================================
 
-[submodule "app-epoch"]
+[submodule "epoch"]
 	path = epoch
-	url = https://github.com/KSalibay/app-epoch.git
+	url = https://github.com/BrainlifeMEEG/epoch.git
 
-[submodule "app-drop-bad-epo"]
+[submodule "drop-bad-epo"]
 	path = drop-bad-epo
 	url = https://github.com/BrainlifeMEEG/drop-bad-epo.git
 
-[submodule "app-events"]
+[submodule "events"]
 	path = events
-	url = https://github.com/brainlife/app-events.git
+	url = https://github.com/BrainlifeMEEG/events.git
 
-[submodule "app-eventslog"]
+[submodule "eventslog"]
 	path = eventslog
-	url = https://github.com/dnacombo/app-eventslog.git
+	url = https://github.com/BrainlifeMEEG/eventslog.git
 
-[submodule "app-evoked-averaged"]
+[submodule "evoked-averaged"]
 	path = evoked-averaged
-	url = https://github.com/zahransa/app-evoked-averaged.git
+	url = https://github.com/BrainlifeMEEG/evoked-averaged
 
-[submodule "app-epoch-psd"]
+[submodule "epoch-psd"]
 	path = epoch-psd
-	url = https://github.com/guiomar/app-epoch-psd.git
+	url = https://github.com/BrainlifeMEEG/epoch-psd.git
 
 # ============================================================================
 # ICA (Independent Component Analysis)
 # ============================================================================
 
-[submodule "app-ICA-fit"]
+[submodule "ICA-fit"]
 	path = ICA-fit
 	url = https://github.com/BrainlifeMEEG/ICA-fit.git
 
-[submodule "app-ICA-fit-epo"]
+[submodule "ICA-fit-epo"]
 	path = ICA-fit-epo
-	url = https://github.com/dnacombo/app-ica-fit-epo.git
+	url = https://github.com/BrainlifeMEEG/ICA-fit-epo.git
 
-[submodule "app-ICA-apply"]
+[submodule "ICA-apply"]
 	path = ICA-apply
 	url = https://github.com/BrainlifeMEEG/ICA-apply.git
 
-[submodule "app-ICA-apply-epo"]
+[submodule "ICA-apply-epo"]
 	path = ICA-apply-epo
-	url = https://github.com/dnacombo/app-ICA-apply-epo.git
+	url = https://github.com/BrainlifeMEEG/ICA-apply-epo.git
 
-[submodule "app-ICA-plot"]
+[submodule "ICA-plot"]
 	path = ICA-plot
-	url = https://github.com/zahransa/app-ICA-plot.git
+	url = https://github.com/BrainlifeMEEG/ICA-plot.git
 
 # ============================================================================
 # SSP (Signal Space Projection)
 # ============================================================================
 
-[submodule "app-SSP-projectors-ECG"]
+[submodule "SSP-projectors-ECG"]
 	path = SSP-projectors-ECG
-	url = https://github.com/zahransa/app-SSP-projectors-ECG.git
+	url = https://github.com/BrainlifeMEEG/SSP-projectors-ECG.git
 
-[submodule "app-SSP-projectors-EOG"]
+[submodule "SSP-projectors-EOG"]
 	path = SSP-projectors-EOG
-	url = https://github.com/zahransa/app-SSP-projectors-EOG.git
+	url = https://github.com/BrainlifeMEEG/SSP-projectors-EOG.git
 
-[submodule "app-SSP-apply"]
+[submodule "SSP-apply"]
 	path = SSP-apply
-	url = https://github.com/zahransa/app-apply-projectors.git
+	url = https://github.com/BrainlifeMEEG/ssp-apply.git
 
-[submodule "app-plot_proj_topomaps-raw"]
+[submodule "plot_proj_topomaps-raw"]
 	path = plot_proj_topomaps-raw
-	url = https://github.com/dnacombo/app-plot_proj_topomaps-raw.git
+	url = https://github.com/BrainlifeMEEG/plot-proj-topomaps-raw.git
 
 # ============================================================================
 # Analysis & Features
 # ============================================================================
 
-[submodule "app-psd"]
+[submodule "psd"]
 	path = psd
-	url = https://github.com/guiomar/app-psd.git
+	url = https://github.com/BrainlifeMEEG/psd.git
 
-[submodule "app-peak-amplitude"]
+[submodule "peak-amplitude"]
 	path = peak-amplitude
-	url = https://github.com/guiomar/app-peak-amplitude.git
+	url = https://github.com/BrainlifeMEEG/peak-amplitude.git
 
-[submodule "app-detect-alpha-peak"]
-	path = detect-alpha-peak
-	url = https://github.com/brainlife/app-detect-alpha-peak.git
+[submodule "peak-frequency"]
+	path = peak-frequency
+	url = https://github.com/BrainlifeMEEG/peak-frequency.git
 
 # ============================================================================
 # Data Concatenation & Information
 # ============================================================================
 
-[submodule "app-concat"]
+[submodule "concat"]
 	path = concat
-	url = https://github.com/KSalibay/app-concat.git
+	url = https://github.com/BrainlifeMEEG/concat.git
 
-[submodule "app-info-raw"]
+[submodule "info-raw"]
 	path = info-raw
-	url = https://github.com/KSalibay/app-info-raw.git
+	url = https://github.com/BrainlifeMEEG/info-raw.git
 
-[submodule "app-info-epo"]
+[submodule "info-epo"]
 	path = info-epo
 	url = https://github.com/BrainlifeMEEG/info-epo.git
 
-[submodule "app-info-evoked"]
+[submodule "info-evoked"]
 	path = info-evoked
 	url = https://github.com/BrainlifeMEEG/info-evoked.git
 
@@ -188,40 +188,40 @@
 # Advanced Processing
 # ============================================================================
 
-[submodule "app-head-pos"]
+[submodule "head-pos"]
 	path = head-pos
-	url = https://github.com/brainlife/app-head-pos.git
+	url = https://github.com/BrainlifeMEEG/head-pos.git
 
-[submodule "app-maxfilter"]
-	path = app-maxfilter
+[submodule "maxfilter"]
+	path = maxfilter
 	url = https://github.com/BrainlifeMEEG/maxwell-filter.git
 
-[submodule "app-make-watershed-bem"]
+[submodule "make-watershed-bem"]
 	path = make-watershed-bem
 	url = https://github.com/BrainlifeMEEG/make-watershed-bem.git
 
-[submodule "app-mean-transformation-matrix"]
-	path = app-mean-transformation-matrix
-	url = https://github.com/brainlife/app-mean-transformation-matrix.git
+[submodule "mean-transformation-matrix"]
+	path = mean-transformation-matrix
+	url = https://github.com/BrainlifeMEEG/mean-transformation-matrix.git
 
-[submodule "app-emptyroom-proj"]
+[submodule "emptyroom-proj"]
 	path = emptyroom-proj
-	url = https://github.com/guiomar/app-emptyroom-proj.git
+	url = https://github.com/BrainlifeMEEG/emptyroom-proj.git
 
-[submodule "app-average-erp"]
+[submodule "average-erp"]
 	path = average-erp
-	url = https://github.com/guiomar/app-average-erp.git
+	url = https://github.com/BrainlifeMEEG/average-erp.git
 
 # ============================================================================
 # Shared Utilities
 # ============================================================================
 
-[submodule "brainlife_utils"]
+[submodule "BrainlifeMEEG_utils"]
 	path = BrainlifeMEEG_utils
 	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_utils.git
-[submodule "app-plot-epochs"]
+[submodule "plot-epochs"]
 	path = plot-epochs
 	url = https://github.com/BrainlifeMEEG/plot-epochs.git
-[submodule "app-meegflow"]
+[submodule "meegflow"]
 	path = meegflow
-	url = https://github.com/BrainlifeMEEG/meegflow.git
+	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_meegflow.git
