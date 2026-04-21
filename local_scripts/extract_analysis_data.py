@@ -157,9 +157,16 @@ def process_file(filepath: str, channels_dir: Path, epochs_dir: Path) -> Dict[st
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
         
+        total_trials_start = re.search(r'Total No. of correct trials:\s*(\d+)', content)
+        total_trials_start = int(total_trials_start.group(1)) if total_trials_start else None
         bad_channels = extract_bad_channels(content)
         pass1 = extract_bad_trials_pass(content, pass_num=1)
         pass2 = extract_bad_trials_pass(content, pass_num=2)
+        
+        if total_trials_start - pass1['rejected_count'] != pass1['trials_left']:
+            raise ValueError(f"Inconsistent trial counts for pass 1 in file {filepath}")
+        if pass1['trials_left'] - pass2['rejected_count'] != pass2['trials_left']:
+            raise ValueError(f"Inconsistent trial counts for pass 2 in file {filepath}")
         
         # Extract subject and task
         subject, task = extract_subject_task(filepath)
@@ -222,7 +229,7 @@ def main():
             print()
     
     # Save summary to JSON
-    output_json = channels_dir / 'summary.json'
+    output_json = 'summary.json'
     with open(output_json, 'w') as f:
         json.dump(results, f, indent=2)
     print(f"Summary saved to {output_json}")
