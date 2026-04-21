@@ -162,7 +162,7 @@
 
 [submodule "peak-frequency"]
 	path = peak-frequency
-	url = https://github.com/BrainlifeMEEG/peak-frequency.git
+	url = git@github.com:BrainlifeMEEG/peak-frequency.git
 
 # ============================================================================
 # Data Concatenation & Information
@@ -225,3 +225,6 @@
 [submodule "meegflow-app"]
 	path = meegflow-app
 	url = https://github.com/BrainlifeMEEG/BrainlifeMEEG_meegflow-app
+[submodule "maxwell-filter"]
+	path = maxwell-filter
+	url = git@github.com:BrainlifeMEEG/maxwell-filter.git
