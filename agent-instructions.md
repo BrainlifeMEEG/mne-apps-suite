@@ -7,7 +7,7 @@ This is a collection of Brainlife.io applications for neuroimaging data processi
 ## Project Structure
 
 ### App Organization
-- Each `app-*` folder contains a complete Brainlife.io application
+- Each folder contains a complete Brainlife.io application
 - Apps follow a consistent pattern for neuroimaging data processing workflows
 - Apps are designed to run in Docker/Singularity containers via the Brainlife.io platform
 
@@ -40,17 +40,17 @@ Every app typically contains:
 4. **`README.md`** - Documentation including:
    - App description and functionality
    - Input/output specifications
-   - Citations and acknowledgments
+   - Citations and acknowledgments: "Hayashi, S., Caron, B.A., Heinsfeld, A.S. et al. brainlife.io: a decentralized and open-source cloud platform to support neuroscience research. Nat Methods 21, 809–813 (2024). https://doi.org/10.1038/s41592-024-02237-2"
    - Brainlife.io badges and metadata
 
 5. **`brainlife_utils/`** - Shared utility library containing:
+   - should be a submodule: git submodule add git@github.com:BrainlifeMEEG/brainlifeMEEG_utils.git brainlife_utils
    - Configuration handling (`config_utils.py`)
    - File operations (`file_utils.py`)
    - Data processing helpers (`data_utils.py`)
    - Report generation (`report_utils.py`)
    - Plotting utilities (`plot_utils.py`)
-
-6. **`helper.py`** (legacy) - Individual app-specific utilities (being replaced by shared utils)
+   - NO **`helper.py`** should be used. Remove if existing.
 
 ## Common Patterns
 
@@ -77,25 +77,25 @@ Every app typically contains:
 
 ## App Categories
 
-### Data Conversion Apps (`app-*2mne`)
+### Data Conversion Apps (`*2mne`)
 - Convert various formats to MNE-compatible `.fif` files
-- Examples: `app-bdf2mne`, `app-edf2mne`, `app-ctf2mne`
+- Examples: `bdf2mne`, `edf2mne`, `ctf2mne`
 
-### Preprocessing Apps (`app-filter-*`, `app-*-filter`)
+### Preprocessing Apps (`filter-*`, `*-filter`)
 - Apply temporal and spatial filters
-- Examples: `app-filter-raw`, `app-notch-filter`, `app-temporal-filtering`
+- Examples: `filter-raw`, `notch-filter`, `temporal-filtering`
 
-### Projector computation for artifact removal (`app-ICA-*`, `app-SSP-*`)
+### Projector computation for artifact removal (`ICA-*`, `SSP-*`)
 - Independent Component Analysis and Signal Space Projection
-- Examples: `app-ICA-fit`, `app-ICA-apply`, `app-SSP-projectors-ECG`
+- Examples: `ICA-fit`, `ICA-apply`, `SSP-projectors-ECG`
 
-### Epoching and Events (`app-epoch*`, `app-events*`)
+### Epoching and Events (`epoch*`, `events*`)
 - Event detection and epoch extraction
-- Examples: `app-epoch`, `app-events`, `app-evoked-averaged`
+- Examples: `epoch`, `events`, `evoked-averaged`
 
-### Analysis Apps (`app-psd`, `app-peak-*`)
+### Analysis Apps (`psd`, `peak-*`)
 - Spectral analysis and feature extraction
-- Examples: `app-psd`, `app-peak-amplitude`, `app-detect-alpha-peak`
+- Examples: `psd`, `peak-amplitude`, `detect-alpha-peak`
 
 ## Development Guidelines
 
@@ -178,9 +178,9 @@ Rules:
 ## App Refactoring Strategy
 
 ### Overview
-Systematically refactor existing apps to use the shared `brainlife_utils` package, eliminating code duplication and improving maintainability. This follows a consistent 4-step process per app.
+Systematically refactor existing apps to use the shared `brainlife_utils` package, eliminating code duplication and improving maintainability. This follows a consistent 5-step process per app.
 
-### Refactoring Process (4 Steps Per App)
+### Refactoring Process (5 Steps Per App)
 
 **Step 1: Create Feature Branch**
 ```bash
@@ -200,7 +200,7 @@ git checkout -b refactor-shared-utils
 
 **Author Updates**
 - Add Maximilien Chaumon as co-author in README.md Authors section
-- If Indiana University is listed as affiliation, move it in parentheses after first author (e.g., "Author (Indiana University)")
+- If affiliation listed, move it in parentheses after first author (e.g., "Author (Indiana University)")
 - Use GitHub handles instead of emails: https://github.com/dnacombo (Maximilien), https://github.com/KSalibay (Kamilya), https://github.com/guiomar (Guiomar)
 - Update copyright year to 2026 in both main.py and README.md
 - In main.py, add copyright and authors block after module docstring:
@@ -221,12 +221,18 @@ git commit -m "refactor: use shared brainlife_utils library"
 ```
 
 **Step 4: Add Submodule**
+
+Navigate inside the app's directory (e.g., `cd my-app`) and run the following commands:
+
 ```bash
-git submodule add https://github.com/BrainlifeMEEG/brainlife_utils.git brainlife_utils
-git add .gitmodules brainlife_utils
-git commit -m "feat: add brainlife_utils as git submodule"
+git submodule add https://github.com/BrainlifeMEEG/BrainlifeMEEG_utils.git brainlife_utils
+git add .gitmodules BrainlifeMEEG_utils
+git commit -m "feat: add BrainlifeMEEG_utils as git submodule"
 git push
 ```
+**Step 5: Update License to AGPL-3.0**
+See license.txt file for details. Copy it to the repo.
+
 
 ### Critical Notes
 - **product.json is RUNTIME-ONLY**: Never commit product.json to the repository. It is generated at runtime by main.py when executed on Brainlife.io platform. Only the code that creates it (in main.py) should be committed.
@@ -234,16 +240,16 @@ git push
 - Always update README.md to match established documentation structure
 
 ### Refactored Apps (Reference Examples)
-- `app-egi2mne`: Complete refactoring with bad channel support
-- `app-interpolate-raw`: Complete refactoring with structured output
-- `app-add-montage`: Complete refactoring with electrode positioning
-- `app-mark_bad-raw`: Complete refactoring with bad channel and annotation handling
-- `app-ICA-apply`: Complete refactoring with component exclusion and artifact detection
-- `app-ICA-fit`: Complete refactoring with EOG/ECG artifact detection
-- `app-ICA-fit-epo`: Complete refactoring for epoched data ICA fitting
-- `app-ICA-apply-epo`: Complete refactoring for epoched ICA application
-- `app-ICA-plot`: Complete refactoring for ICA visualization
-- `app-drop-bad-epo`: Complete refactoring with epoch dropping and file handling
+- `egi2mne`: Complete refactoring with bad channel support
+- `interpolate-raw`: Complete refactoring with structured output
+- `add-montage`: Complete refactoring with electrode positioning
+- `mark_bad-raw`: Complete refactoring with bad channel and annotation handling
+- `ICA-apply`: Complete refactoring with component exclusion and artifact detection
+- `ICA-fit`: Complete refactoring with EOG/ECG artifact detection
+- `ICA-fit-epo`: Complete refactoring for epoched data ICA fitting
+- `ICA-apply-epo`: Complete refactoring for epoched ICA application
+- `ICA-plot`: Complete refactoring for ICA visualization
+- `drop-bad-epo`: Complete refactoring with epoch dropping and file handling
 
 ### Documentation Structure in README.md
 Use this consistent structure for all refactored apps:
@@ -254,7 +260,7 @@ Use this consistent structure for all refactored apps:
 5. **Usage** - How to run the app
 6. **Technical Details** - MNE-specific details
 7. **Authors** - Contribution information
-8. **Citations** - Academic citations
+8. **Citations** - Academic citations: "Hayashi, S., Caron, B.A., Heinsfeld, A.S. et al. brainlife.io: a decentralized and open-source cloud platform to support neuroscience research. Nat Methods 21, 809–813 (2024). https://doi.org/10.1038/s41592-024-02237-2"
 9. **Funding** - Funding acknowledgments
 
 ## Key Dependencies
