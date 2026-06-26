@@ -17,7 +17,6 @@ Every app typically contains:
 
 1. **`main`** - Bash script that:
    - Sets up PBS/SLURM job parameters
-   - Creates output directories (`out_dir`, `out_figs`, `out_report`)
    - Executes the Python script via Singularity container
    - May generate `product.json` for visualization outputs
 
@@ -25,6 +24,7 @@ Every app typically contains:
    - No ad-hoc definitions for "main" or "generate-report" or "apply_filter" functions, but rather a single main.py that handles all processing steps for the app
    - Loads configuration from `config.json`
    - Processes neuroimaging data using MNE-Python
+   - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
    - Saves outputs to designated directories
    - Generates reports and visualizations
    - Creates `product.json` for Brainlife.io interface
@@ -117,6 +117,12 @@ Every app typically contains:
 - Handle matplotlib backend for headless execution
 - Generate base64-encoded images for web display
 
+### Output file naming conventions:
+- Raw data files should be called raw.fif
+- Epoched data files should be called epo.fif
+- Evoked data files should be called ave.fif
+- reports are all called report.html
+
 ### Shared Utilities Usage:
 ```python
 import sys
@@ -197,11 +203,13 @@ git checkout -b refactor-shared-utils
 - Use `add_info_to_product()` for messages
 - Update `README.md` with consistent documentation structure
 - Update `config.json` with all supported parameters
+- Remove lecacy `helpers.py`
+
 
 **Author Updates**
 - Add Maximilien Chaumon as co-author in README.md Authors section
 - If affiliation listed, move it in parentheses after first author (e.g., "Author (Indiana University)")
-- Use GitHub handles instead of emails: https://github.com/dnacombo (Maximilien), https://github.com/KSalibay (Kamilya), https://github.com/guiomar (Guiomar)
+- Use GitHub handles instead of emails: https://github.com/dnacombo (Maximilien), https://github.com/KSalibay (Kamilya), https://github.com/guiomar (Guiomar), https://github.com/zahransa (Saeed)
 - Update copyright year to 2026 in both main.py and README.md
 - In main.py, add copyright and authors block after module docstring:
   ```python
@@ -232,6 +240,7 @@ git push
 ```
 **Step 5: Update License to AGPL-3.0**
 See license.txt file for details. Copy it to the repo.
+Remove legacy MIT LICENSE file.
 
 
 ### Critical Notes
