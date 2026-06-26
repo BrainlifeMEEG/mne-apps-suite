@@ -228,3 +228,6 @@
 [submodule "maxwell-filter"]
 	path = maxwell-filter
 	url = git@github.com:BrainlifeMEEG/maxwell-filter.git
+[submodule "crop-raw"]
+	path = crop-raw
+	url = git@github.com:BrainlifeMEEG/crop-raw.git
