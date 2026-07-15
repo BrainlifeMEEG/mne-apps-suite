@@ -24,7 +24,6 @@ Every app typically contains:
    - Loads configuration from `config.json`
    - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
    - Processes neuroimaging data using MNE-Python
-   - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
    - Saves outputs to designated directories
    - Generates reports and visualizations as needed
    - Creates `product.json` for Brainlife.io interface as needed
