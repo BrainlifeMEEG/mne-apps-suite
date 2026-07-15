@@ -192,17 +192,9 @@
 	path = head-pos
 	url = https://github.com/BrainlifeMEEG/head-pos.git
 
-[submodule "maxfilter"]
-	path = maxfilter
-	url = https://github.com/BrainlifeMEEG/maxwell-filter.git
-
 [submodule "make-watershed-bem"]
 	path = make-watershed-bem
 	url = https://github.com/BrainlifeMEEG/make-watershed-bem.git
-
-[submodule "mean-transformation-matrix"]
-	path = mean-transformation-matrix
-	url = https://github.com/BrainlifeMEEG/mean-transformation-matrix.git
 
 [submodule "emptyroom-proj"]
 	path = emptyroom-proj
