@@ -1,4 +1,4 @@
-# Brainlife.io MNE Apps - Copilot Instructions
+# Brainlife.io MNE Apps - Instructions
 
 ## Project Overview
 
@@ -18,16 +18,16 @@ Every app typically contains:
 1. **`main`** - Bash script that:
    - Sets up PBS/SLURM job parameters
    - Executes the Python script via Singularity container
-   - May generate `product.json` for visualization outputs
 
 2. **`main.py`** - Main Python script that:
    - No ad-hoc definitions for "main" or "generate-report" or "apply_filter" functions, but rather a single main.py that handles all processing steps for the app
    - Loads configuration from `config.json`
+   - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
    - Processes neuroimaging data using MNE-Python
    - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
    - Saves outputs to designated directories
-   - Generates reports and visualizations
-   - Creates `product.json` for Brainlife.io interface
+   - Generates reports and visualizations as needed
+   - Creates `product.json` for Brainlife.io interface as needed
 
 3. **`config.json`** - Configuration file containing example:
    - Input file paths
@@ -60,20 +60,18 @@ Every app typically contains:
 3. Output: Processed data files, reports, and visualizations
 
 ### Container Usage
-- Apps use Brainlife.io Docker images: `brainlife/mne:x.x.x`
+- Apps use Brainlife.io Docker images.
 - Executed via Singularity for HPC compatibility
-- Matplotlib backend set to 'Agg' for headless rendering
 
 ### Output Structure
 - `out_dir/` - Primary data outputs (e.g., `raw.fif`, `meg-epo.fif`)
 - `out_figs/` - PNG plots and visualizations
-- `out_report/` - HTML reports (MNE Report objects)
+- `out_report/` - HTML reports (MNE Report html)
 - `product.json` - Metadata for Brainlife.io interface
 
 ### Configuration Handling
 - JSON configurations with parameter validation
 - Helper functions for None value conversion
-- Support for complex parameter mappings (e.g., event IDs)
 
 ## App Categories
 
@@ -82,7 +80,7 @@ Every app typically contains:
 - Examples: `bdf2mne`, `edf2mne`, `ctf2mne`
 
 ### Preprocessing Apps (`filter-*`, `*-filter`)
-- Apply temporal and spatial filters
+- Apply temporal filters
 - Examples: `filter-raw`, `notch-filter`, `temporal-filtering`
 
 ### Projector computation for artifact removal (`ICA-*`, `SSP-*`)
@@ -91,7 +89,7 @@ Every app typically contains:
 
 ### Epoching and Events (`epoch*`, `events*`)
 - Event detection and epoch extraction
-- Examples: `epoch`, `events`, `evoked-averaged`
+- Examples: `epoch`, `events`
 
 ### Analysis Apps (`psd`, `peak-*`)
 - Spectral analysis and feature extraction
@@ -114,7 +112,6 @@ Every app typically contains:
 - Use `setup_matplotlib_backend()` for headless execution
 - Use `ensure_output_dirs()` for creating output directories
 - Use `create_product_json()` and `add_image_to_product()` for Brainlife.io outputs
-- Handle matplotlib backend for headless execution
 - Generate base64-encoded images for web display
 
 ### Output file naming conventions:
@@ -154,7 +151,7 @@ create_product_json(product_items)
 
 ## Product Metadata Convention (Required)
 
-For all refactored apps, always build `product.json` using an explicit list accumulator.
+For all apps, always build `product.json` using an explicit list accumulator.
 
 Required pattern:
 ```python
@@ -176,7 +173,7 @@ Rules:
 - Call `create_product_json(product_items)` only after all product items are added.
 
 ### Testing Considerations:
-- Apps should handle missing or invalid inputs gracefully
+- Apps should add a warning to product.json upon missing or invalid inputs.
 - Include parameter validation
 - Test with various data formats and configurations
 - Ensure outputs are compatible with downstream apps
