@@ -18,11 +18,12 @@ Every app typically contains:
 1. **`main`** - Bash script that:
    - Sets up PBS/SLURM job parameters
    - Executes the Python script via Singularity container
+   - The Python entrypoint invoked must be named exactly `main.py` — no alternate entrypoint filenames are permitted
 
 2. **`main.py`** - Main Python script that:
    - No ad-hoc definitions for "main" or "generate-report" or "apply_filter" functions, but rather a single main.py that handles all processing steps for the app
    - Loads configuration from `config.json`
-   - Ensure required output directories exist (e.g. `out_dir`, `out_figs`, `out_report`)
+   - Ensures only the output directories the app actually writes to exist — typically some subset of `out_dir`, `out_figs`, `out_report`. Do not create unused output directories
    - Processes neuroimaging data using MNE-Python
    - Saves outputs to designated directories
    - Generates reports and visualizations as needed
@@ -35,6 +36,8 @@ Every app typically contains:
     - Filter settings
     - Event mappings
    - No comment fields
+   - Required for every app that exposes user-configurable parameters; apps with no parameters may omit it, but must still call `load_config()` with sane defaults
+   - A `config.json.example` alone is never sufficient — if example values are meant to be used for testing, `config.json` itself must also exist
 
 4. **`README.md`** - Documentation including:
    - App description and functionality
@@ -43,13 +46,13 @@ Every app typically contains:
    - Brainlife.io badges and metadata
 
 5. **`brainlife_utils/`** - Shared utility library containing:
-   - should be a submodule: git submodule add git@github.com:BrainlifeMEEG/brainlifeMEEG_utils.git brainlife_utils
+   - must be a real git submodule: git submodule add git@github.com:BrainlifeMEEG/brainlifeMEEG_utils.git brainlife_utils. A plain copied `brainlife_utils/` directory (no `.git`) is non-compliant — it cannot receive upstream fixes and will drift
    - Configuration handling (`config_utils.py`)
    - File operations (`file_utils.py`)
    - Data processing helpers (`data_utils.py`)
    - Report generation (`report_utils.py`)
    - Plotting utilities (`plot_utils.py`)
-   - NO **`helper.py`** should be used. Remove if existing.
+   - No local helper/utility module of any name (`helper.py`, `brainlife_apps_helper/`, or similar) is permitted. All shared logic must live in `brainlife_utils`; if a helper contains logic not yet in `brainlife_utils`, upstream it there first, then remove the local copy.
 
 ## Common Patterns
 
@@ -63,14 +66,14 @@ Every app typically contains:
 - Executed via Singularity for HPC compatibility
 
 ### Output Structure
-- `out_dir/` - Primary data outputs (e.g., `raw.fif`, `meg-epo.fif`)
+- `out_dir/` - Primary data outputs (e.g., `raw.fif`, `epo.fif`)
 - `out_figs/` - PNG plots and visualizations
 - `out_report/` - HTML reports (MNE Report html)
 - `product.json` - Metadata for Brainlife.io interface
 
 ### Configuration Handling
 - JSON configurations with parameter validation
-- Helper functions for None value conversion
+- `brainlife_utils.config_utils` provides None-value conversion for config parameters
 
 ## App Categories
 
@@ -110,13 +113,16 @@ Every app typically contains:
 - Use `load_config()` for configuration loading and preprocessing
 - Use `setup_matplotlib_backend()` for headless execution
 - Use `ensure_output_dirs()` for creating output directories
-- Use `create_product_json()` and `add_image_to_product()` for Brainlife.io outputs
+- Build `product.json` via the `product_items` accumulator pattern — see "Product Metadata Convention" below
 - Generate base64-encoded images for web display
 
 ### Output file naming conventions:
 - Raw data files should be called raw.fif
 - Epoched data files should be called epo.fif
 - Evoked data files should be called ave.fif
+- ICA solutions should be called ica.fif
+- SSP/ECG/EOG projectors should be called proj.fif
+- Any other derived artifact not covered above should use `<type>.fif` with the MNE-conventional suffix — never a custom filename
 - reports are all called report.html
 
 ### Shared Utilities Usage:
@@ -138,14 +144,9 @@ from brainlife_utils import (
 # Set up environment
 setup_matplotlib_backend()
 config = load_config()
-ensure_output_dirs('out_dir', 'out_figs', 'out_report')
+ensure_output_dirs('out_dir', 'out_figs', 'out_report')  # only the dirs this app actually writes to
 
-# Add metadata to product
-product_items = []
-add_raw_info_to_product(product_items, raw)  # For raw data information
-add_image_to_product(product_items, fig, 'plot.png')  # For figures
-add_info_to_product(product_items, "Processing message")  # For text messages
-create_product_json(product_items)
+# Build product.json — see "Product Metadata Convention" below for the full pattern
 ```
 
 ## Product Metadata Convention (Required)
@@ -172,8 +173,11 @@ Rules:
 - Call `create_product_json(product_items)` only after all product items are added.
 
 ### Testing Considerations:
-- Apps should add a warning to product.json upon missing or invalid inputs.
-- Include parameter validation
-- Test with various data formats and configurations
-- Ensure outputs are compatible with downstream apps
+- A missing or invalid required config key must produce an `add_info_to_product` warning and a clean exit — never an uncaught stack trace.
+- Every processing parameter read from `config.json` must be validated (type/range/allowed values) before use.
+- Output `.fif` files must load successfully with the corresponding MNE reader (`mne.io.read_raw_fif`, `mne.read_epochs`, etc.) before the app exits successfully.
+
+## Repository Hygiene
+
+- When an app is renamed or retired, remove its entry from the root `.gitmodules` — do not leave orphaned submodule declarations pointing at a directory that no longer exists.
 
