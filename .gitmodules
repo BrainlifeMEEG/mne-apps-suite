@@ -223,3 +223,12 @@
 [submodule "crop-raw"]
 	path = crop-raw
 	url = git@github.com:BrainlifeMEEG/crop-raw.git
+[submodule "interpolate"]
+	path = interpolate
+	url = git@github.com:BrainlifeMEEG/interpolate.git
+[submodule "rereference"]
+	path = rereference
+	url = git@github.com:BrainlifeMEEG/rereference.git
+[submodule "apply-baseline"]
+	path = apply-baseline
+	url = git@github.com:BrainlifeMEEG/apply-baseline.git
