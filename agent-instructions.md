@@ -181,3 +181,32 @@ Rules:
 
 - When an app is renamed or retired, remove its entry from the root `.gitmodules` — do not leave orphaned submodule declarations pointing at a directory that no longer exists.
 
+## CLI use and Brainlife documentation
+
+### Documentation
+
+- User/app docs live at https://brainlife.io/docs — sections cover Projects, Processes, Pipelines, Apps (registration, `config.json.schema`, `product.json`), Datatypes, Resources, Publications.
+- Source for these docs (to check for very recent additions before they're indexed by search): https://github.com/brainlife/docs — e.g. `docs/user/*.md`, `docs/apps/*.md`, `docs/cli/*.md`, `docs/technical/api.md`.
+- The docs site can lag behind the live platform by months — new UI features (e.g. the "save pipeline group as workflow" feature added July 2026) may only be discoverable by inspecting the deployed app directly (see "Direct API calls" below for how), not by reading the docs.
+
+### CLI
+
+- Install: `sudo npm install -g brainlife` (npm package name is `brainlife`, the binary is `bl`).
+- Login: `bl login --ttl 7` (the `--ttl` is the token lifetime in days).
+- Source: https://github.com/brainlife/cli — install/usage docs per subcommand at https://brainlife.io/docs/cli/ (`install`, `upload`, `download`, `app`, `group`, `update`).
+- CLI coverage is intentionally limited — it wraps the Warehouse API for common tasks (upload/download datasets, submit/query apps, manage projects). For anything it doesn't support, fall back to direct API calls.
+
+### Direct API calls
+
+Brainlife is a set of microservices, each with its own base URL under `brainlife.io`. All of them expect `Authorization: Bearer <jwt>` (the JWT from `bl login`, or from the `auth` service directly).
+
+| Service | Base URL | Purpose | API docs |
+|---|---|---|---|
+| Warehouse | `https://brainlife.io/api/warehouse` | Projects, datasets, apps, pipelines/rules, workflows, tasks | https://brainlife.github.io/warehouse/apidoc |
+| Amaretti | `https://brainlife.io/api/amaretti` | Task submission/monitoring on compute resources | https://brainlife.github.io/amaretti/apidoc |
+| Auth | `https://brainlife.io/api/auth` | Login, profile, JWT issuance | source is private; contact brainlife devs for details |
+| Event | `https://brainlife.io/api/event` | Event bus (also exposed as a websocket) | — |
+
+More detail: https://brainlife.io/docs/technical/api and the corresponding source in the docs repo (`docs/technical/api.md`).
+
+Practical tip for reverse-engineering a feature that isn't documented yet: the warehouse UI (a Vue 2 app) is served at `brainlife.io` as `/static/js/app.<hash>.js` plus lazy-loaded numbered chunks (`/static/js/<n>.<hash>.js`, hash map is in `/static/js/manifest.<hash>.js`). Grepping the deployed bundle for a UI string (e.g. a button's tooltip text) is often faster than digging through GitHub when the public repo hasn't caught up to production yet.
