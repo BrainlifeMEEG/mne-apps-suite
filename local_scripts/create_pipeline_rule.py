@@ -112,13 +112,15 @@ def build_rule_payload(app, project, name="", config=None, branch=None,
                         input_tags=None, output_tags=None,
                         subject_match="", session_match="",
                         input_subject=None, input_session=None,
-                        input_multicount=None, active=True):
+                        input_multicount=None, input_selection=None, active=True):
     """Mirror RuleModal.vue's initializeAppIdsInRuleObj() +
     initializeAppConfigIdsInRuleConfigObj(): fill in every input/output id
     the app declares, defaulting config to the app's declared defaults and
     output tags to a slug of the rule name (composeOutputTag)."""
     config = dict(config or {})
     for key, spec in (app.get("config") or {}).items():
+        if spec.get("type") == "input":
+            continue  # file-input references, not user config -- RuleModal.vue strips these before posting
         config.setdefault(key, spec.get("default"))
 
     input_tags = dict(input_tags or {})
@@ -126,6 +128,7 @@ def build_rule_payload(app, project, name="", config=None, branch=None,
     input_subject = dict(input_subject or {})
     input_session = dict(input_session or {})
     input_multicount = dict(input_multicount or {})
+    input_selection = dict(input_selection or {})
 
     for inp in app.get("inputs", []):
         iid = inp["id"]
@@ -147,7 +150,7 @@ def build_rule_payload(app, project, name="", config=None, branch=None,
         "subject_match": subject_match,
         "session_match": session_match,
         "extra_datatype_tags": {},
-        "input_selection": {},
+        "input_selection": input_selection,
         "input_tags": input_tags,
         "input_subject": input_subject,
         "input_session": input_session,
@@ -163,14 +166,14 @@ def create_rule(project, app_id, name="", config=None, branch=None,
                  input_tags=None, output_tags=None,
                  subject_match="", session_match="",
                  input_subject=None, input_session=None,
-                 input_multicount=None, active=True, dry_run=False):
+                 input_multicount=None, input_selection=None, active=True, dry_run=False):
     app = fetch_app(app_id)
     payload = build_rule_payload(
         app, project, name=name, config=config, branch=branch,
         input_tags=input_tags, output_tags=output_tags,
         subject_match=subject_match, session_match=session_match,
         input_subject=input_subject, input_session=input_session,
-        input_multicount=input_multicount, active=active,
+        input_multicount=input_multicount, input_selection=input_selection, active=active,
     )
     if dry_run:
         print(f"[dry-run] POST rule\n{json.dumps(payload, indent=2)}")
@@ -237,6 +240,15 @@ def add_rule_to_pipeline(project, rule_id, group_name=None, dry_run=False):
             raise RuntimeError(f"no pipeline group named {group_name!r} in project {project}")
         target.setdefault("items", []).append({"type": "rule", "ruleId": rule_id})
 
+    if dry_run:
+        print(f"[dry-run] PUT rule/order/{project}\n{json.dumps(pipelines, indent=2)}")
+        return pipelines
+    return _api("PUT", f"rule/order/{project}", body=pipelines)
+
+
+def set_pipeline(project, pipelines, dry_run=False):
+    """Replace the project's whole pipeline tree outright (e.g. to organize
+    rules into named groups) rather than incrementally splicing one rule in."""
     if dry_run:
         print(f"[dry-run] PUT rule/order/{project}\n{json.dumps(pipelines, indent=2)}")
         return pipelines
