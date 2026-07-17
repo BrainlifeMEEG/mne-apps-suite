@@ -210,3 +210,66 @@ Brainlife is a set of microservices, each with its own base URL under `brainlife
 More detail: https://brainlife.io/docs/technical/api and the corresponding source in the docs repo (`docs/technical/api.md`).
 
 Practical tip for reverse-engineering a feature that isn't documented yet: the warehouse UI (a Vue 2 app) is served at `brainlife.io` as `/static/js/app.<hash>.js` plus lazy-loaded numbered chunks (`/static/js/<n>.<hash>.js`, hash map is in `/static/js/manifest.<hash>.js`). Grepping the deployed bundle for a UI string (e.g. a button's tooltip text) is often faster than digging through GitHub when the public repo hasn't caught up to production yet.
+
+### Inspecting a process's task logs (slurm-*.err, product.json, outputs)
+
+A `brainlife.io/project/<id>/process/<id>` URL's `process` ID is an Amaretti
+**instance** ID — Warehouse has no "process"/"instance" model of its own,
+this concept lives entirely in Amaretti (source: `brainlife/amaretti`,
+`api/controllers/{instance,task}.js`). An instance groups one task per
+pipeline step. No `bl` CLI subcommand covers this (`bl app run`/`bl app wait`
+only submit/wait on new runs) — it's direct-API-only:
+
+```bash
+TOKEN=$(cat ~/.config/brainlife.io/.jwt)   # populated by `bl login`
+
+# 1. instance -> per-step task IDs + statuses (config.summary[].task_id)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://brainlife.io/api/amaretti/instance?find=%7B%22_id%22%3A%22<processId>%22%7D"
+
+# 2. task detail (status, status_msg e.g. TIMEOUT, resource, env, timings)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://brainlife.io/api/amaretti/task/<taskId>"
+
+# 3. list files in the task's working directory (slurm-*.log/.err, product.json, out_dir/...)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://brainlife.io/api/amaretti/task/ls/<taskId>"
+
+# 4. download a specific file
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://brainlife.io/api/amaretti/task/download/<taskId>/slurm-<jobid>.err" -o slurm.err
+```
+
+The same workdir also exists on disk on this cluster, under
+`/network/iss/brainlife/users/brlife/workdir/<instanceId>/<taskId>/` — but
+it's owned by the `brlife` service account and not readable by other users,
+so the API route above is the reliable path.
+
+### Reducing noise in slurm-*.err logs
+
+`.err` is just the job's raw stderr — SLURM doesn't filter it by severity, so
+it collects whatever every layer writes to fd 2. In practice that's three
+independent sources, each fixable separately:
+
+- **Apptainer/Singularity's own INFO/WARNING chatter** (`INFO: Using cached
+  SIF image`, `WARNING: passwd file doesn't exist in container...` — the
+  latter is benign/expected for rootless containers on shared HPC). Suppress
+  with a *global* flag placed before the subcommand, not after:
+  `singularity --silent exec docker://... python3 main.py` (`--silent` =
+  errors only; `--quiet` = still shows warnings). This only affects
+  Apptainer's own messages, not anything the contained process writes.
+- **joblib/scikit-learn parallel progress spam**
+  (`[Parallel(n_jobs=1)]: Done N out of N | elapsed: ...`), written by code
+  MNE calls internally (e.g. `Report.add_evokeds`, `autoreject`) — this comes
+  from MNE's own log-level default, not an explicit `verbose=` passed by app
+  code. Fix at the source: call `mne.set_log_level('WARNING')` early in
+  `main.py` (or centrally once inside `brainlife_utils`, e.g. in
+  `setup_matplotlib_backend()` or `load_config()`, so every app gets it for
+  free) — this collapses MNE's internal joblib verbosity to 0.
+- **Genuine Python warnings** (e.g. `RuntimeWarning: This filename ... does
+  not conform to MNE naming conventions`) — these are real signal, not noise;
+  don't blanket-suppress `warnings.filterwarnings('ignore')`. Fix the
+  underlying cause instead (in that example: MNE expects evoked files to end
+  in `-ave.fif`/`_ave.fif`, which conflicts with this repo's own
+  `ave.fif`-only convention — worth resolving one way or the other rather
+  than living with the warning on every run).
