@@ -63,6 +63,6 @@ RUN pip install --no-cache-dir pyvistaqt qtpy PyQt5
 # Bake in fsaverage so apps with a fsaverage-fallback path don't hit a
 # runtime download on a walltime-constrained job (same TIMEOUT class of
 # problem hit with the un-cached brainlifemeeg/mne image on its first run).
-RUN python3 -c "import mne; mne.datasets.fetch_fsaverage(subjects_dir='${SUBJECTS_DIR}', verbose=True)"
+RUN python3 -c "from pathlib import Path; import mne; mne.datasets.fetch_fsaverage(subjects_dir=Path('${SUBJECTS_DIR}'), verbose=True)"
 
 CMD ["python3"]
