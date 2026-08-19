@@ -1,0 +1,4 @@
+data_cache/
+state.json
+__pycache__/
+*.pyc

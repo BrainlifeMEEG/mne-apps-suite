@@ -8,6 +8,8 @@ flag what needs fixing or building, and list open questions — before anything 
 
 - **Data**: confirmed already staged in the target project (`brainlife.io/project/5df7efdc32bff02262e226b6`) — raw MEG (`task-facerecognition`, `run-##`), MaxFilter derivatives (`proc-sss`, `run-##`), T1 (`acq-mprage`). Ready for Phase 1.
 - **Source-space work (Figs 8–12)**: deferred. The `obVdo` apps this needs aren't in this repo yet, and you're contacting the developer directly before that work starts. Not analyzed further below.
+- **Phase 1 (fif2mne) and Phase 2 (maxwell-filter, Fig 1 A/B)**: done for S10 run02, see `run_pipeline.py` and `figures/fig1_maxfilter_comparison.py`. Along the way: fixed a real `maxwell-filter` bug (`head_pos` fed the wrong file type), fixed a real `bl-app-run-instanced.js` crash (in [[project-brainlifepipelinecli]] terms, `BrainlifePipelineCLI`), and found that `mne.chpi.filter_chpi()` is a required step before `maxwell_filter()` that neither our app nor a naive script call includes by default — see open questions.
+- **Raw upload data gap**: this project's raw MEG datasets have no `calibration`/`crosstalk`/`channels` sidecar files attached (all resolve to nonexistent paths) — only `events.tsv`/`headshape.pos`/`coordsystem.json` came through. Calibration/crosstalk turned out to matter less than feared for Fig 1 (see below), but this is still worth fixing via the maintainer conversation already in progress.
 
 ## Figure-by-figure roadmap
 
@@ -16,7 +18,7 @@ Cross-referenced against the actual mne-biomag-group-demo script order and the F
 | Figure | Content | Target script | Brainlife App(s) | Status |
 |---|---|---|---|---|
 | — (read data) | — | `02-extract_events.py` | `fif2mne` | ✅ exists |
-| 1 A/B | raw vs. SSS vs. MaxFilter comparison | `03-maxwell_filtering.py` | `maxwell-filter` | ✅ exists |
+| 1 A/B | raw vs. SSS vs. MaxFilter comparison | `03-maxwell_filtering.py` | `maxwell-filter` | ✅ **done for S10 run02** — `figures/fig1_maxfilter_comparison.py`. Needed a local (non-app) SSS run with `mne.chpi.filter_chpi()` applied first; the brainlife.io app itself doesn't do this yet (open question below) |
 | 2 | PSD, subject 10 run 02 | (pre-ICA QC) | `psd` / `epoch-psd` | 🛑 **broken** — both call `psd_welch`/`psd_multitaper`/`plot_psd`, all removed from current MNE-Python. Must be fixed before this figure can be produced. |
 | 3 | filter frequency/impulse response, MNE 1.12 | `04-python_filtering.py` | `filter-raw` | ✅ exists for the filtering itself; the response-curve figure is a custom plot pulling filter coefficients, not an App report — build it as a local script |
 | — (bad seg/chan, ICA, epoching) | new diagnostic figures, open-ended | `05-run_ica.py`, `06-make_epochs.py` | `mark-bad-raw`, `ICA-fit`, `ICA-apply`, `epoch`, `drop-bad-epo` | ✅ exist. ⚠️ `ICA-plot`/`ICA-fit`'s `main` bash script overwrites the correct `product.json` with a stale base64 heredoc (known bug) — fix opportunistically when we're at this step, not blocking |
@@ -50,7 +52,8 @@ A new standalone tool, `local_scripts/BrainlifePipelineCLI/` (its own git repo, 
 1. Fig 6B already contains a decoding curve — is the brief's separate "decoding figure" phase meant to extend that, or produce something distinct?
 2. Grand-averaging across subjects (needed starting at Fig 5's "all subjects" pass) — local script first per the recommendation above, confirm before Phase 7.
 3. Source-space apps (`obVdo`) — on hold pending your contact with the developer; revisit scope once that's resolved.
+4. Should `maxwell-filter` (the app) be hardened to call `mne.chpi.filter_chpi()` internally before `maxwell_filter()`? Real, reproducible gap found while building Fig 1 — without it, magnetometer output is dominated by a ~7 Hz cHPI beat-frequency artifact (~20x noisier than Elekta's reference `proc-sss`, no visible evoked peak). Not yet fixed in the app itself; Fig 1 used a local script instead.
 
-## Next step (not started)
+## Next step
 
-Phase 1 per the brief: run `fif2mne` on subject 10, run 02, on the Brainlife platform. Data is confirmed staged and ready — awaiting go-ahead.
+Phase 3 per the brief: compute PSD, recreate Figure 2 for subject 10 run 02 — blocked on fixing `psd`/`epoch-psd`'s deprecated MNE API calls first (see status table above).
