@@ -22,6 +22,7 @@ STATE_FILE = Path(__file__).parent / "state.json"
 APPS = {
     # (app_id, github_branch, input_id)
     "fif2mne": ("628b5c89d0697cf1eaeaffad", "main", "fif1"),
+    "maxwell-filter": ("602bc6a33a001123014c442a", "v1.0", "fif01"),
 }
 
 
@@ -46,7 +47,7 @@ def main():
 
             app_id, branch, input_id = APPS["fif2mne"]
             runner = PipelineRunner(project=PROJECT, branch=branch)
-            out = runner.run_step(
+            fif2mne_out = runner.run_step(
                 state, STATE_FILE,
                 step_key=f"S{subject}:run{run}:fif2mne",
                 app_id=app_id,
@@ -57,7 +58,30 @@ def main():
                 instance_name=f"S{subject}",
                 dry_run=args.dry_run,
             )
-            print(f"fif2mne output dataset: {out}")
+            print(f"fif2mne output dataset: {fif2mne_out}")
+
+            # NB: maxwell-filter's "fif01" input declares datatype
+            # neuro/meg/fif (same as the raw upload), not
+            # neuro/meeg/mne/raw (fif2mne's output datatype) -- it
+            # consumes the original raw upload directly, not fif2mne's
+            # output. Confirmed empirically: chaining fif2mne_out in here
+            # fails with "Given input of datatype neuro/meeg/mne/raw but
+            # expected neuro/meg/fif".
+            app_id, branch, input_id = APPS["maxwell-filter"]
+            runner = PipelineRunner(project=PROJECT, branch=branch)
+            mf_out = runner.run_step(
+                state, STATE_FILE,
+                step_key=f"S{subject}:run{run}:maxwell-filter",
+                app_id=app_id,
+                input_ids=input_id,
+                dataset_ids=[raw_id],
+                config={},
+                tags=[f"S{subject}", f"run{run}"],
+                instance_name=f"S{subject}",
+                dry_run=args.dry_run,
+                output_id="out_dir",
+            )
+            print(f"maxwell-filter output dataset: {mf_out}")
 
 
 if __name__ == "__main__":
