@@ -36,19 +36,24 @@ find_bad_channels_maxwell() (found nothing, with or without calibration
 origin=(0, 0.008, 0.037) matching Elekta's JSON instead of MNE's
 origin="auto" fit, which converged to a substantially different point
 ([0.26, 37.7, 40.5]mm -- MNE's own "more than 20mm from head frame
-origin" warning flagged this). The origin fix roughly halved the
-residual difference from Elekta (evoked diff std 25.8 -> 13.2 fT, peak
-217 -> 60 fT) -- now used here. destination="run4" (cross-run alignment)
-is not yet tried, would need run 4's data too.
+origin" warning flagged this): roughly halved the residual difference
+(evoked diff std 25.8 -> 13.2 fT, peak 217 -> 60 fT); destination=<S10
+run04's raw.fif> (cross-run alignment, matching Elekta's trans=run4 --
+run 4's raw fetched via a fresh fif2mne run since it wasn't cached
+locally yet) on top of that: diff std 13.2 -> 10.0 fT, peak 60 -> 37 fT.
+Both fixes now used here. Remaining ~10 fT residual likely reflects
+hpisubt=amp / linefreq=50 / autobad=on, none of which have a direct MNE
+equivalent tried yet.
 
 Inputs are local files in data_cache/S10_run02/:
   - unprocessed_raw.fif                 <- fif2mne output (re-saved raw, no SSS)
-  - mne_maxwellfilter_origin_meg.fif
+  - mne_maxwellfilter_dest_run4_meg.fif
         <- mne.preprocessing.maxwell_filter(calibration=..., cross_talk=...,
-           origin=(0, 0.008, 0.037)), run locally (NOT the brainlife.io
-           maxwell-filter app's own output -- that app has no wiring for
-           a shared calibration input yet; see mne_maxwellfilter_meg.fif
-           for that app's actual output, kept for reference)
+           origin=(0, 0.008, 0.037), destination=<S10 run04 raw.fif>),
+           run locally (NOT the brainlife.io maxwell-filter app's own
+           output -- that app has no wiring for a shared calibration
+           input yet; see mne_maxwellfilter_meg.fif for that app's actual
+           output, kept for reference)
   - elekta_maxfilter_meg.fif            <- pre-existing "proc-sss" staged
         dataset (subject 10 run02, tags ["proc-sss", "run-02"])
 """
@@ -66,7 +71,7 @@ STIM_CODES = [5, 6, 7, 13, 14, 15, 17, 18, 19]  # Famous/Unfamiliar/Scrambled on
 
 BRANCHES = {
     "A. Unprocessed": DATA_DIR / "unprocessed_raw.fif",
-    "B. MNE maxwell_filter": DATA_DIR / "mne_maxwellfilter_origin_meg.fif",
+    "B. MNE maxwell_filter": DATA_DIR / "mne_maxwellfilter_dest_run4_meg.fif",
 }
 ELEKTA_PATH = DATA_DIR / "elekta_maxfilter_meg.fif"
 
