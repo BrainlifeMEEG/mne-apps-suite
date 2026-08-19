@@ -18,25 +18,37 @@ Confirmed against the actual mne-biomag-group-demo script
 (03-maxwell_filtering.py) that there is NO mne.chpi.filter_chpi() call
 anywhere in the published pipeline -- an earlier draft of this figure used
 that step and got a superficially similar-looking result, but for the
-wrong reason. The real recipe: maxwell_filter(calibration=..., cross_talk=...,
+wrong reason (see fig_chpi_diagnostic.py for why it looked like a fix).
+The real recipe: maxwell_filter(calibration=..., cross_talk=...,
 st_duration=..., origin=..., destination=..., head_pos=...) with bad
 channels read from a MaxFilter log file, then raw.filter(None, 40) (MEG)
-before plotting. This script currently only supplies calibration/cross_talk
-(from OpenNeuro's shared sss_cal.dat/ct_sparse.fif) -- st_duration (tSSS),
-destination, head_pos (movement compensation), and the MaxFilter-log bad
-channel list are not yet reproduced (open question in Strategy.md). Even
-without those, calibration + cross_talk + a plain 1-40 Hz post-filter
-already gets close to Elekta's reference (~2.6x apart in std, vs. ~100x
-apart before filtering).
+before plotting.
+
+ds000117's derivatives sidecar JSON on OpenNeuro
+(sub-10_ses-meg_task-facerecognition_proc-sss_meg.json) documents exactly
+what Elekta's own MaxFilter run used: autobad=on, movecomp=inter,
+linefreq=50, hpisubt=amp, origin=[0,8,37]mm, trans=run4 (SSS destination
+aligned to run 4's head position, not run 2's own). Tested against that
+reference, in order: movement compensation (no improvement -- within-run
+head motion here is <0.4mm, negligible); MNE's
+find_bad_channels_maxwell() (found nothing, with or without calibration
+-- doesn't reproduce Elekta's own autobad thresholds); explicit
+origin=(0, 0.008, 0.037) matching Elekta's JSON instead of MNE's
+origin="auto" fit, which converged to a substantially different point
+([0.26, 37.7, 40.5]mm -- MNE's own "more than 20mm from head frame
+origin" warning flagged this). The origin fix roughly halved the
+residual difference from Elekta (evoked diff std 25.8 -> 13.2 fT, peak
+217 -> 60 fT) -- now used here. destination="run4" (cross-run alignment)
+is not yet tried, would need run 4's data too.
 
 Inputs are local files in data_cache/S10_run02/:
   - unprocessed_raw.fif                 <- fif2mne output (re-saved raw, no SSS)
-  - mne_maxwellfilter_calibrated_only_meg.fif
-        <- mne.preprocessing.maxwell_filter(calibration=..., cross_talk=...),
-           run locally (NOT the brainlife.io maxwell-filter app's own
-           output -- that app has no wiring for a shared calibration
-           input yet; see mne_maxwellfilter_meg.fif for that app's actual
-           output, kept for reference)
+  - mne_maxwellfilter_origin_meg.fif
+        <- mne.preprocessing.maxwell_filter(calibration=..., cross_talk=...,
+           origin=(0, 0.008, 0.037)), run locally (NOT the brainlife.io
+           maxwell-filter app's own output -- that app has no wiring for
+           a shared calibration input yet; see mne_maxwellfilter_meg.fif
+           for that app's actual output, kept for reference)
   - elekta_maxfilter_meg.fif            <- pre-existing "proc-sss" staged
         dataset (subject 10 run02, tags ["proc-sss", "run-02"])
 """
@@ -54,7 +66,7 @@ STIM_CODES = [5, 6, 7, 13, 14, 15, 17, 18, 19]  # Famous/Unfamiliar/Scrambled on
 
 BRANCHES = {
     "A. Unprocessed": DATA_DIR / "unprocessed_raw.fif",
-    "B. MNE maxwell_filter": DATA_DIR / "mne_maxwellfilter_calibrated_only_meg.fif",
+    "B. MNE maxwell_filter": DATA_DIR / "mne_maxwellfilter_origin_meg.fif",
 }
 ELEKTA_PATH = DATA_DIR / "elekta_maxfilter_meg.fif"
 
