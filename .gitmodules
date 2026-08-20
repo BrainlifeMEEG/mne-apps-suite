@@ -232,3 +232,6 @@
 [submodule "apply-baseline"]
 	path = apply-baseline
 	url = git@github.com:BrainlifeMEEG/apply-baseline.git
+[submodule "autoreject"]
+	path = autoreject
+	url = https://github.com/BrainlifeMEEG/autoreject.git
