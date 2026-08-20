@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
-"""Recreate paper Figure 1 (subject 10, run 02).
+"""Recreate paper Figure 1.
+
+IMPORTANT subject-numbering finding (2026-08-20): the paper's own
+"subject 10" example does not correspond to BIDS sub-10. ds000117's
+README documents an authoritative crosswalk between four different
+numbering schemes (original Wakeman & Henson 2015, openfMRI, the FTP N=16
+subset, and BIDS/OpenNeuro) -- none of which are a simple constant offset
+of each other. Checked against the actual mne-biomag-group-demo config
+(map_subjects dict): key 10 there = W&H "subject_12", which the README
+crosswalk maps to BIDS sub-09 -- and sub-09's demo-repo bad-channel list
+for run 2 (7 channels) visually matches the paper's published Figure 2
+(several red/bad lines), while BIDS sub-10 (= W&H "subject_15" via the
+same crosswalk) has zero marked bad channels in any run, which does not
+match the published figure at all. So: default subject here is 09,
+matching the paper. sub-10 work from earlier in this reproduction is kept
+as valid platform work but doesn't correspond to the paper's own example
+subject -- pass --subject 10 to still regenerate it for reference.
 
 Paper caption (Frontiers 2018, Fig 1): "Evoked responses (filtered between
 1 and 40 Hz) in the magnetometer channels from (A) unprocessed data, (B)
@@ -66,14 +82,8 @@ import matplotlib.pyplot as plt
 import mne
 import numpy as np
 
-DATA_DIR = Path(__file__).parent.parent / "data_cache" / "S10_run02"
+CACHE_ROOT = Path(__file__).parent.parent / "data_cache"
 STIM_CODES = [5, 6, 7, 13, 14, 15, 17, 18, 19]  # Famous/Unfamiliar/Scrambled onsets
-
-BRANCHES = {
-    "A. Unprocessed": DATA_DIR / "unprocessed_raw.fif",
-    "B. MNE maxwell_filter": DATA_DIR / "mne_maxwellfilter_dest_run4_meg.fif",
-}
-ELEKTA_PATH = DATA_DIR / "elekta_maxfilter_meg.fif"
 
 
 def sensor_rgb(info, picks):
@@ -112,16 +122,26 @@ def butterfly(ax, evoked, colors, title, ylim=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", default=str(Path(__file__).parent / "figure1_maxfilter_comparison.png"))
+    parser.add_argument("--subject", default="09", help="BIDS subject id, zero-padded (default: 09, matches the paper)")
+    parser.add_argument("--run", default="02", help="run number, zero-padded (default: 02)")
+    parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
+    data_dir = CACHE_ROOT / f"S{args.subject}_run{args.run}"
+    branches = {
+        "A. Unprocessed": data_dir / "unprocessed_raw.fif",
+        "B. MNE maxwell_filter": data_dir / "mne_maxwellfilter_dest_run4_meg.fif",
+    }
+    elekta_path = data_dir / "elekta_maxfilter_meg.fif"
+    out = args.out or str(Path(__file__).parent / f"figure1_maxfilter_comparison_S{args.subject}.png")
+
     evokeds = {}
-    for label, path in BRANCHES.items():
+    for label, path in branches.items():
         evokeds[label] = load_evoked(path)
         print(f"{label}: {len(evokeds[label].ch_names)} magnetometers, "
               f"std={evokeds[label].data.std()*1e15:.1f} fT")
 
-    elekta = load_evoked(ELEKTA_PATH)
+    elekta = load_evoked(elekta_path)
     print(f"Elekta MaxFilter: std={elekta.data.std()*1e15:.1f} fT")
 
     picks = mne.pick_types(evokeds["A. Unprocessed"].info, meg="mag")
@@ -131,14 +151,14 @@ def main():
     diff.data = evokeds["B. MNE maxwell_filter"].data - elekta.data
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 4.5))
-    butterfly(axes[0], evokeds["A. Unprocessed"], colors, "A. Unprocessed")
+    butterfly(axes[0], evokeds["A. Unprocessed"], colors, "A. Unprocessed", ylim=(-550, 550))
     butterfly(axes[1], evokeds["B. MNE maxwell_filter"], colors, "B. MNE maxwell_filter", ylim=axes[0].get_ylim())
     butterfly(axes[2], diff, colors, "C. MNE − Elekta MaxFilter (difference)", ylim=axes[1].get_ylim())
 
-    fig.suptitle("Figure 1 (reproduction) — Subject 10, Run 02 — magnetometers, 1–40 Hz")
+    fig.suptitle(f"Figure 1 (reproduction) — Subject {args.subject}, Run {args.run} — magnetometers, 1–40 Hz")
     fig.tight_layout()
-    fig.savefig(args.out, dpi=150)
-    print(f"saved {args.out}")
+    fig.savefig(out, dpi=150)
+    print(f"saved {out}")
 
 
 if __name__ == "__main__":
