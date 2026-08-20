@@ -60,7 +60,18 @@ HPI_FREQS = [293, 307, 314, 321, 328]
 def load_eeg_raw(raw_path, bad_channels):
     raw = mne.io.read_raw_fif(raw_path, allow_maxshield=True, verbose=False)
     raw.load_data(verbose=False)
-    raw.set_channel_types({"EEG061": "eog", "EEG062": "eog", "EEG063": "ecg"})
+    # EEG064 is a permanently free-floating (unconnected) electrode for
+    # this system/study -- explicitly excluded in the actual plot_psd.py
+    # source (retyped "misc", with that exact comment) before picking EEG
+    # channels. Missed in an earlier draft of this script (only found via
+    # fetching the script's literal raw text, not an AI-summarized read of
+    # it -- the summary silently dropped this 4th remapping). Left in
+    # without exclusion, it shows a ~10dB-lower baseline and an unrelated
+    # ~39 Hz harmonic series (39/78/117/156/195/234 Hz) picked up as
+    # ambient interference, having nothing to do with line noise (50 Hz)
+    # or the cHPI coils (293-328 Hz) -- consistent with an unconnected
+    # input acting as an antenna, not a real recording artifact.
+    raw.set_channel_types({"EEG061": "eog", "EEG062": "eog", "EEG063": "ecg", "EEG064": "misc"})
     raw.info["bads"] = list(bad_channels)
     return raw
 
