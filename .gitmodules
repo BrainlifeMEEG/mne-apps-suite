@@ -68,10 +68,6 @@
 	path = filter-epo
 	url = https://github.com/BrainlifeMEEG/filter-epo.git
 
-[submodule "notch-filter"]
-	path = notch-filter
-	url = https://github.com/BrainlifeMEEG/notch-filter.git
-
 [submodule "resampling"]
 	path = resampling
 	url = https://github.com/BrainlifeMEEG/resampling.git
