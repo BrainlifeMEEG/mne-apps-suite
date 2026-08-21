@@ -1,0 +1,22 @@
+Brainlife.io apps developped by the MEEG Brainlife team
+
+Copyright (C) 2026 Maximilien Chaumon, Guiomar Niso, Kami Salibayeva, Saeed Zahran, Aurore Bussalb
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Dependencies:
+- **MNE-Python**
+  Copyright (c) 2011-2026 MNE-Python developers
+  Licensed under the 3-Clause BSD License.
+  (See https://mne.tools/stable/license.html for details)
