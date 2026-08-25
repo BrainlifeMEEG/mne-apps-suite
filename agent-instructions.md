@@ -124,6 +124,7 @@ Every app typically contains:
 - SSP/ECG/EOG projectors should be called proj.fif
 - Any other derived artifact not covered above should use `<type>.fif` with the MNE-conventional suffix — never a custom filename
 - reports are all called report.html
+- Exception: apps that accept a list of input files and refine each independently (rather than merging them into one output, e.g. `fif2mne`) may name outputs `<type>_<n>.fif` (e.g. `raw_1.fif`, `raw_2.fif`) when there is more than one, falling back to the plain `<type>.fif` name for a single input. This is the one sanctioned deviation from the single-fixed-name rule above.
 
 ### Shared Utilities Usage:
 ```python
