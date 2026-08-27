@@ -2,11 +2,10 @@
 """Phase 5: bad channels/segments, ICA, epoching -- plus diagnostic figures
 (brief: "Can you think of diagnostic new figures to show?").
 
-Subject 09 (paper's "subject 10"), run 02 only for now, matching this
-reproduction's established incremental-development pattern -- NOT yet the
-full 6-run concatenation the real group pipeline uses for ICA fitting
-(see below). Single-run ICA is a real methodological simplification worth
-being explicit about; it isn't just a smaller version of the same thing.
+Subject 09 (paper's "subject 10"). ICA is fit on all 6 runs concatenated,
+matching the official pipeline exactly (see below) -- diagnostic figures
+and the saved epochs focus on run 02 only, per this reproduction's
+established incremental-development pattern.
 
 Methodology confirmed against the actual scripts (raw text, not AI
 summaries -- 03-maxwell_filtering.py, 05-run_ica.py, 06-make_epochs.py,
@@ -31,17 +30,60 @@ library/config.py):
   a *separate* MaxFilter-log-based bad-channel source for the SSS step
   specifically ("Static bad channels" line) -- real, but it's internal to
   03-maxwell_filtering.py's own one-off subject-3 demo, not part of the
-  main pipeline we're following here.
+  main pipeline we're following here. Each of the 6 runs has its own
+  per-run bad-channel list (fetched from the same GitHub path, subject_12
+  = BIDS sub-09): run01 none, run02 the 7 channels above, run03
+  {EEG004,008,043,045,047}, run04 {EEG043,045,047,071}, run05
+  {EEG004,007,008}, run06 {EEG004,008} -- interpolated per-run, before
+  concatenation, matching 06-make_epochs.py's per-run loop.
 - Filtering (on top of the SSS'd data): lowpass 40 Hz for MEG; 1-40 Hz
   bandpass for EEG; 1 Hz highpass for EOG -- same 'auto'/firwin/hamming
   design as Figure 3, confirmed against the same script.
 - ICA: fastica, n_components=0.999, MEG picks only, random_state=42,
-  reject=dict(grad=4000e-13, mag=4e-12) during fitting, decim=11.
-  Officially fit on all 6 runs concatenated ("ICA needs a highpass" is
-  why the 1 Hz-filtered branch specifically is used) -- single-run here.
-- ECG/EOG component detection: create_ecg_epochs/create_eog_epochs on the
-  filtered raw, ica.find_bads_ecg(method='ctps', threshold=0.8) /
-  find_bads_eog(), excluding up to 3 components each.
+  reject=dict(grad=4000e-13, mag=4e-12) during fitting, fit on all 6 runs
+  concatenated ("ICA needs a highpass" is why the 1 Hz-filtered branch
+  specifically is used). decim=3 here, not the official decim=11 --
+  the 6-run concatenation is resampled 1100->300 Hz first (a memory-
+  driven deviation, box OOM'd at full rate; see load_meg_eog_ecg_raw),
+  so decim=3 on 300 Hz lands on the same ~100 Hz effective fit rate
+  decim=11 on 1100 Hz would have given.
+- ECG/EOG component detection: ica.find_bads_ecg(method='ctps',
+  threshold=0.8) / find_bads_eog(ch_name='EOG061') (the official code
+  doesn't pin ch_name; a pin is used here anyway -- see the point-D note
+  for why: EOG062 is broken throughout this subject's whole recording,
+  not a run02-only artifact, and MNE's default auto-selection picks it
+  every time), excluding up to 3 components
+  each (06-make_epochs.py's n_max_ecg/n_max_eog, both 3 despite the EOG
+  comment saying "max 2" -- the code is authoritative). No cross-
+  validation, no amplitude ranking -- plain threshold-based auto-selection
+  is genuinely the official method.
+  REVISED TWICE getting here. First pass (single run 02 only, CTPS):
+  3 "matching" ECG components with no clear score separation, no EOG
+  match, no visible before/after difference -- user flagged this as
+  unconvincing. Investigated with a custom amplitude-ranking heuristic
+  (ica.get_sources() ptp) and method='correlation' instead of CTPS; this
+  produced a clean-looking score separation (components 6/14 for ECG,
+  15/19 for EOG) but the before/after comparison STILL showed no
+  reduction -- in fact a paradoxical increase in RMS at the artifact-
+  locked window when those exact components were removed. Chasing that
+  down (rebuilding each candidate's contribution via
+  ica.apply(epochs, include=[c]) rather than trusting get_sources()'s
+  internal whitened scale, which is not necessarily comparable in
+  physical units across components) showed component 0 -- not 6/14/15/19
+  -- as the single largest channel-space contributor at BOTH the ECG and
+  EOG windows, which is itself a red flag (a component "explaining" both
+  artifacts equally is probably explaining neither specifically). Went
+  back to the actual mne-biomag-group-demo source at that point instead
+  of continuing to invent heuristics on top of a shrinking single-run
+  dataset (per this project's standing rule: verify against primary
+  sources, not AI-plausible-looking fixes) and found the real, simple
+  answer: the official pipeline was never single-run to begin with -- it
+  fits and scores ICA on all 6 runs concatenated (~3000+ heartbeats vs.
+  ~545 in one run), which is almost certainly why single-run CTPS looked
+  statistically noisy: not a CTPS flaw, a data-starvation artifact of the
+  simplification this reproduction had been taking. Switched to the full
+  6-run concatenation and the plain official method; see the printed
+  scores/before-after figures for whether that alone resolves it.
 - Epoching: tmin=-0.2, tmax=2.9 (not Figs 1/2's short display windows --
   those were zoomed views for those specific figures, not this pipeline's
   real epoch window), baseline=None (since we're on the l_freq=1 highpass
@@ -69,9 +111,12 @@ Diagnostic figures (open-ended per the brief):
      activity throughout. Using the auto-selected (bad) channel meant
      ica.find_bads_eog() found nothing to exclude, real blink artifacts
      stayed in the data, and the rejection threshold then correctly
-     rejected almost everything. Fixed by pinning ch_name="EOG061"
-     explicitly rather than trusting automatic channel selection -- worth
-     checking per-subject, this may not generalize.
+     rejected almost everything. Confirmed on the full 6-run
+     concatenation too, not just run02: create_eog_epochs() with no
+     ch_name finds only 6 "blinks" in 42 minutes (EOG062), vs. 208 with
+     ch_name="EOG061" pinned explicitly -- a real per-subject data-quality
+     issue, not a single-run fluke; worth checking per-subject, may not
+     generalize to others.
 """
 import argparse
 from pathlib import Path
@@ -94,10 +139,21 @@ EVENTS_ID = {
     "scrambled/first": 17, "scrambled/immediate": 18, "scrambled/long": 19,
 }
 
-BAD_CHANNELS_RUN02 = {
-    "09": ["EEG006", "EEG013", "EEG023", "EEG034", "EEG043", "EEG045", "EEG047"],
-    "10": [],
+# Per-run bad-channel lists, W&H subject_12 (= BIDS sub-09), fetched from
+# mne-tools/mne-biomag-group-demo scripts/processing/bads/subject_12/
+# run_NN_raw_tr.fif_bad (see module docstring).
+BAD_CHANNELS = {
+    "09": {
+        "01": [],
+        "02": ["EEG006", "EEG013", "EEG023", "EEG034", "EEG043", "EEG045", "EEG047"],
+        "03": ["EEG004", "EEG008", "EEG043", "EEG045", "EEG047"],
+        "04": ["EEG043", "EEG045", "EEG047", "EEG071"],
+        "05": ["EEG004", "EEG007", "EEG008"],
+        "06": ["EEG004", "EEG008"],
+    },
+    "10": {"02": []},
 }
+ALL_RUNS = ["01", "02", "03", "04", "05", "06"]
 
 
 def load_filtered_raw(subject, run):
@@ -106,7 +162,7 @@ def load_filtered_raw(subject, run):
     raw.load_data(verbose=False)
     raw.set_channel_types({"EEG061": "eog", "EEG062": "eog", "EEG063": "ecg", "EEG064": "misc"})
     raw.rename_channels({"EEG061": "EOG061", "EEG062": "EOG062", "EEG063": "ECG063"})
-    raw.info["bads"] = list(BAD_CHANNELS_RUN02.get(subject, []))
+    raw.info["bads"] = list(BAD_CHANNELS.get(subject, {}).get(run, []))
     raw.interpolate_bads(verbose=False)
 
     filt_kw = dict(l_trans_bandwidth="auto", h_trans_bandwidth="auto", filter_length="auto",
@@ -125,6 +181,53 @@ def find_events_from_stim(raw):
     stim_codes = list(EVENTS_ID.values())
     events = mne.find_events(raw, stim_channel="STI101", shortest_event=1, verbose=False)
     return events[np.isin(events[:, 2], stim_codes)]
+
+
+def load_meg_eog_ecg_raw(subject, run):
+    """Lean per-run loader for the ICA-fit/ECG/EOG-scoring path only: MEG +
+    EOG + ECG (+ STIM) channels, EEG dropped entirely. Bad-channel
+    interpolation is skipped too -- the bads list here is EEG-only (see
+    docstring) and has no effect on a MEG-only ICA fit or on the ECG/EOG
+    channels. Six full-channel raws (load_filtered_raw's ~380 channels
+    each, with three separate filter-call copies apiece) OOM'd the box;
+    this trims both channel count and filter-copy overhead per run."""
+    data_dir = DATA_DIR_ROOT / f"S{subject}_run{run}"
+    raw = mne.io.read_raw_fif(data_dir / "elekta_maxfilter_meg.fif", allow_maxshield=True, verbose=False)
+    raw.load_data(verbose=False)
+    raw.set_channel_types({"EEG061": "eog", "EEG062": "eog", "EEG063": "ecg"})
+    raw.rename_channels({"EEG061": "EOG061", "EEG062": "EOG062", "EEG063": "ECG063"})
+    picks_keep = mne.pick_types(raw.info, meg=True, eog=True, ecg=True, stim=True, exclude=())
+    raw.pick([raw.ch_names[p] for p in picks_keep])
+
+    filt_kw = dict(l_trans_bandwidth="auto", h_trans_bandwidth="auto", filter_length="auto",
+                    phase="zero", fir_window="hamming", fir_design="firwin", verbose=False)
+    picks_meg = mne.pick_types(raw.info, meg=True, exclude=())
+    raw.filter(None, H_FREQ, picks=picks_meg, **filt_kw)
+    picks_eog = mne.pick_types(raw.info, meg=False, eog=True)
+    raw.filter(L_FREQ, None, picks=picks_eog, l_trans_bandwidth="auto", filter_length="auto",
+               phase="zero", fir_window="hann", fir_design="firwin", verbose=False)
+    # Resample 1100 -> 300 Hz, safe post-lowpass (data's already band-limited
+    # to 40 Hz, well under the new 150 Hz Nyquist). Even the lean loader's
+    # 6-run concatenation (~1.9 GB at 300 Hz vs. ~7 GB at 1100 Hz) OOM'd this
+    # box during ica.fit()'s internal copies at full rate -- a memory-driven
+    # deviation from the official (full 1100 Hz) recipe, not a methodology
+    # one: 300 Hz keeps ample resolution for R-peak/blink timing.
+    raw.resample(300, npad="auto", verbose=False)
+    return raw
+
+
+def load_all_runs_concat(subject):
+    """All 6 runs (lean MEG+EOG+ECG loader), concatenated in place one run
+    at a time -- matches 05-run_ica.py's `mne.concatenate_raws(raws)` used
+    to fit ICA, without holding all 6 full raws in memory simultaneously."""
+    print(f"  loading run {ALL_RUNS[0]}...")
+    raw = load_meg_eog_ecg_raw(subject, ALL_RUNS[0])
+    for run in ALL_RUNS[1:]:
+        print(f"  loading run {run}...")
+        raw_next = load_meg_eog_ecg_raw(subject, run)
+        raw.append(raw_next)
+        del raw_next
+    return raw
 
 
 def main():
@@ -154,10 +257,16 @@ def main():
     plt.close(fig_d)
     print(f"  saved {out_prefix}_D_eog_quality.png")
 
-    print("Fitting ICA (fastica, n_components=0.999, MEG only)...")
-    picks_ica = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude="bads")
+    print("Loading + concatenating all 6 runs for ICA fitting (matches 05-run_ica.py)...")
+    raw_concat = load_all_runs_concat(args.subject)
+
+    print("Fitting ICA (fastica, n_components=0.999, MEG only, all 6 runs concatenated)...")
+    picks_ica = mne.pick_types(raw_concat.info, meg=True, eeg=False, eog=False, stim=False, exclude="bads")
     ica = ICA(method="fastica", random_state=RANDOM_STATE, n_components=0.999, max_iter="auto")
-    ica.fit(raw, picks=picks_ica, reject=dict(grad=4000e-13, mag=4e-12), decim=11, verbose=False)
+    # decim=3, not the official decim=11 -- raw_concat is already resampled
+    # 1100 -> 300 Hz (see load_meg_eog_ecg_raw), so decim=3 lands on the same
+    # ~100 Hz effective fit rate decim=11-on-1100Hz would have given.
+    ica.fit(raw_concat, picks=picks_ica, reject=dict(grad=4000e-13, mag=4e-12), decim=3, verbose=False)
     print(f"  fit {ica.n_components_} components")
 
     # NB: keep an un-baselined copy of each for ica.apply() later. Applying
@@ -170,16 +279,22 @@ def main():
     # epochs (which get no baseline on this l_freq=1 branch), never on
     # ecg_epochs/eog_epochs themselves -- those are baselined immediately
     # for find_bads_ecg/eog's own purposes and then discarded.
-    ecg_epochs = create_ecg_epochs(raw, tmin=-0.3, tmax=0.3, preload=True, verbose=False)
+    # Official method exactly: method='ctps' for ECG, default (zscore) for
+    # EOG, no ch_name pin, n_max=3 each -- see module docstring for why
+    # this is trustworthy now that it's fit/scored on all 6 concatenated
+    # runs instead of one.
+    ecg_epochs = create_ecg_epochs(raw_concat, tmin=-0.3, tmax=0.3, preload=True, verbose=False)
     ecg_epochs_bl = ecg_epochs.copy().apply_baseline((None, None), verbose=False)
     ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs_bl, method="ctps", threshold=0.8, verbose=False)
+    ecg_scores = np.asarray(ecg_scores)
+    print(f"  ECG: {len(ecg_epochs)} heartbeats across 6 runs, found {len(ecg_inds)} candidate components: {ecg_inds}")
 
-    # ch_name pinned to EOG061 explicitly -- see module docstring, point D:
-    # automatic channel selection here picks whichever EOG channel has the
-    # largest peak-to-peak amplitude, which for this subject/run is EOG062,
-    # a channel dominated by two huge non-physiological transients early on
-    # and flat for the rest of the recording, not real blinks.
-    eog_epochs = create_eog_epochs(raw, ch_name="EOG061", tmin=-0.5, tmax=0.5, preload=True, verbose=False)
+    # ch_name pinned to EOG061 -- see module docstring, point D: MNE's
+    # default auto-selection (largest-p2p EOG channel) picks EOG062 here,
+    # which gives only 6 "blinks" across all 6 runs (42 min) vs. EOG061's
+    # 208 -- confirmed this isn't a run02-only artifact, EOG062 is broken
+    # for this subject throughout the recording, not just one run.
+    eog_epochs = create_eog_epochs(raw_concat, ch_name="EOG061", tmin=-0.5, tmax=0.5, preload=True, verbose=False)
     eog_epochs_bl = eog_epochs.copy().apply_baseline((None, None), verbose=False)
     eog_inds, eog_scores = ica.find_bads_eog(eog_epochs_bl, ch_name="EOG061", verbose=False)
     # find_bads_eog returns one score row per EOG channel (2 here:
@@ -188,33 +303,26 @@ def main():
     eog_scores = np.asarray(eog_scores)
     if eog_scores.ndim == 2:
         eog_scores = eog_scores[np.argmax(np.abs(eog_scores).max(axis=1))]
+    print(f"  EOG: {len(eog_epochs)} blinks across 6 runs, found {len(eog_inds)} candidate components: {eog_inds}")
 
-    # NB: many components score highly for ECG here (several >0.9, close to
-    # or above some of the ones actually selected) -- find_bads_ecg's
-    # returned order isn't simply "sorted by the plotted score descending",
-    # so ecg_inds[:n_max] can look like it skips a visually-taller bar.
-    # Matches the official script's own selection exactly (ecg_inds[:n_max]),
-    # not a bug here -- CTPS scoring on SSS'd, reduced-rank MEG data seems
-    # to spread cardiac-correlated signal across many components rather
-    # than concentrating it in one or two, plausibly a volume-conduction/
-    # SSS-mixing effect worth keeping in mind, not chased further here.
-    n_max = 3
-    excluded = list(dict.fromkeys(ecg_inds[:n_max] + eog_inds[:n_max]))
-    print(f"  ECG components: {ecg_inds[:n_max]}, EOG components: {eog_inds[:n_max]} -> excluding {excluded}")
+    n_max_ecg = n_max_eog = 3
+    ecg_inds, eog_inds = list(ecg_inds[:n_max_ecg]), list(eog_inds[:n_max_eog])
+    excluded = sorted(set(ecg_inds) | set(eog_inds))
+    print(f"  ECG (top {n_max_ecg}): {ecg_inds}, EOG (top {n_max_eog}): {eog_inds} -> excluding {excluded}")
     ica.exclude = excluded
 
     # --- Diagnostic figure A: excluded component topographies + scores ---
     if excluded:
         fig_a = ica.plot_components(picks=excluded, show=False)
-        fig_a.suptitle(f"A. Excluded ICA components (ECG={ecg_inds[:n_max]}, EOG={eog_inds[:n_max]}) — S{args.subject} run{args.run}")
+        fig_a.suptitle(f"A. Excluded ICA components (ECG={ecg_inds}, EOG={eog_inds}) — S{args.subject}, all 6 runs")
         fig_a.savefig(f"{out_prefix}_A_ica_components.png", dpi=150)
         plt.close(fig_a)
 
         fig_scores, axes = plt.subplots(1, 2, figsize=(11, 3.5))
-        axes[0].bar(range(len(ecg_scores)), ecg_scores, color=["r" if i in ecg_inds[:n_max] else "gray" for i in range(len(ecg_scores))])
-        axes[0].set(title="ECG score per component", xlabel="ICA component", ylabel="score")
-        axes[1].bar(range(len(eog_scores)), eog_scores, color=["r" if i in eog_inds[:n_max] else "gray" for i in range(len(eog_scores))])
-        axes[1].set(title="EOG score per component", xlabel="ICA component", ylabel="score")
+        axes[0].bar(range(len(ecg_scores)), ecg_scores, color=["r" if i in ecg_inds else "gray" for i in range(len(ecg_scores))])
+        axes[0].set(title="ECG score per component (ctps method)", xlabel="ICA component", ylabel="score")
+        axes[1].bar(range(len(eog_scores)), eog_scores, color=["r" if i in eog_inds else "gray" for i in range(len(eog_scores))])
+        axes[1].set(title="EOG score per component (zscore method)", xlabel="ICA component", ylabel="score")
         fig_scores.tight_layout()
         fig_scores.savefig(f"{out_prefix}_A_ica_scores.png", dpi=150)
         plt.close(fig_scores)
@@ -241,7 +349,7 @@ def main():
         picks = mne.pick_types(evk.info, meg="mag")
         ax.plot(evk.times * 1000, evk.data[picks].T * 1e15, lw=0.5, color="C0", alpha=0.5)
         ax.set(title=title, xlabel="Time (ms)", ylabel="fT")
-    fig_b.suptitle(f"B. ICA artifact removal, ECG/EOG-locked magnetometer averages — S{args.subject} run{args.run}")
+    fig_b.suptitle(f"B. ICA artifact removal, ECG/EOG-locked magnetometer averages — S{args.subject}, all 6 runs")
     fig_b.tight_layout()
     fig_b.savefig(f"{out_prefix}_B_ica_before_after.png", dpi=150)
     plt.close(fig_b)
