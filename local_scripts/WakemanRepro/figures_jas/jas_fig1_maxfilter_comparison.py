@@ -133,7 +133,7 @@ def main():
         "B. MNE maxwell_filter": data_dir / "mne_maxwellfilter_dest_run4_meg.fif",
     }
     elekta_path = data_dir / "elekta_maxfilter_meg.fif"
-    out = args.out or str(Path(__file__).parent / f"figure1_maxfilter_comparison_S{args.subject}.png")
+    out = args.out or str(Path(__file__).parent / f"jas_fig1_maxfilter_comparison_S{args.subject}.png")
 
     evokeds = {}
     for label, path in branches.items():

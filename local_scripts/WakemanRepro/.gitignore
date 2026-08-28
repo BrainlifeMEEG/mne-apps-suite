@@ -2,9 +2,10 @@ data_cache/
 state.json
 __pycache__/
 *.pyc
-figures/paper_figure1_reference.*
-figures/paper_figure2_reference.*
-figures/paper_figure3_reference.*
+# Published-paper figure images (fetched from frontiersin.org for
+# side-by-side comparison) -- not ours to redistribute, local-reference
+# only. See figures_jas/README.md.
+figures_jas/paper_figure*_reference.*
 
 # derivatives/ is a machine-local symlink farm into this desktop's own
 # dataset checkout (absolute paths under /home/maximilien.chaumon/... and

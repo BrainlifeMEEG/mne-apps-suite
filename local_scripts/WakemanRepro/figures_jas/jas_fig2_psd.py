@@ -94,7 +94,7 @@ def main():
 
     raw_path = CACHE_ROOT / f"S{args.subject}_run{args.run}" / "unprocessed_raw.fif"
     bad_channels = BAD_CHANNELS_RUN02.get(args.subject, [])
-    out = args.out or str(Path(__file__).parent / f"figure2_psd_S{args.subject}.png")
+    out = args.out or str(Path(__file__).parent / f"jas_fig2_psd_S{args.subject}.png")
 
     raw = load_eeg_raw(raw_path, bad_channels)
     picks = mne.pick_types(raw.info, eeg=True, exclude=[])

@@ -70,7 +70,7 @@ def centered_time(h, sfreq):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", default=str(Path(__file__).parent / "figure3_filter_response.png"))
+    parser.add_argument("--out", default=str(Path(__file__).parent / "jas_fig3_filter_response.png"))
     args = parser.parse_args()
 
     h_highpass_new = mne.filter.create_filter(
