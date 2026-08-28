@@ -22,6 +22,14 @@ subject 3 (see cluster/run_subject3_extra.py for how each was produced):
       recompute, then 06/07's tsss=1 branch)
 All three read the 'faces' evoked condition (famous+unfamiliar combined,
 comment='faces', per 07-make_evoked.py's own naming) by name, not position.
+
+Restricted to magnetometers (`picks='mag'`): the fetched paper figure list
+(frontiersin.org) describes Figure 4 as "evoked responses in
+magnetometers" specifically -- not all three channel types. This also
+sidesteps a real API mismatch: `Evoked.plot(axes=<single Axes>)` requires
+one axes PER channel type present (3, for eeg+grad+mag) unless picks
+restricts to a single type, confirmed by running this and reading the
+resulting ValueError, not assumed upfront.
 """
 import os
 import sys
@@ -60,7 +68,8 @@ for ax, (label, fname) in zip(axes, conditions):
         print(f"[jas_fig4] WARNING: missing {fname} -- run cluster/run_subject3_extra.py first")
         continue
     faces_evo = mne.read_evokeds(fname, condition="faces")
-    faces_evo.plot(spatial_colors=True, gfp=True, ylim=ylim, axes=ax, show=False)
+    faces_evo.plot(spatial_colors=True, gfp=True, ylim={"mag": ylim["mag"]},
+                   picks="mag", axes=ax, show=False)
     ax.set_title(f"{SUBJECT}: {label}")
     print(f"[jas_fig4] loaded {fname} (nave={faces_evo.nave})")
 

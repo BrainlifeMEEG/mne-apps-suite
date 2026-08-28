@@ -237,6 +237,27 @@ the paper's own reported finding; Fig 7 finds 1 significant spatiotemporal clust
 posterior-right sensor cluster, 140-800ms, consistent with the paper's "right ventral visual
 cortex" description at the sensor level.
 
+## Subject-3 tSSS branch: same overwrite gap, but wider (2026-08-28)
+
+Extending the "Cluster smoke test" overwrite-gap finding above: it's not just `ICA.save()`.
+Confirmed via `inspect.signature` that `mne.preprocessing.ICA.save()`, `mne.Evoked.save()`, and
+`mne.Epochs.save()` **all** default to `overwrite=False` in current MNE, and `06-make_epochs.py`
+calls all three. Two distinct failure modes hit in practice while running subject 3's tSSS branch:
+- `06`'s `tsss` branch sets `ica_name = ica_out_name` (the SAME path, read then overwritten within
+  one execution, by the script's own design) -- so `ica.save()` fails on the **first ever run**,
+  not just reruns.
+- `06` writes several files progressively before its final `epochs.save()` (ecg-ave.fif,
+  eog-ave.fif, the ICA solution, ...) -- a failure partway through (like the one above) leaves
+  real, legitimately-already-written files behind that the *next* attempt's earlier lines
+  (`ecg_epochs.average().save(...)` etc.) then collide with, even though nothing is "stale" in the
+  sense of being wrong content -- it's just an earlier successful write from the same logical run.
+
+Fixed in `cluster/run_subject3_extra.py` via process-scoped monkeypatches of all three
+(`ICA.save`, `Evoked.save`, `Epochs.save`, each forcing `overwrite=True`), not edits to
+`original_scripts/`. Also added a skip-if-already-done guard around `03-maxwell_filtering.py`'s
+call (itself internally idempotent -- its own `raw.save()` already passes `overwrite=True` -- but
+takes ~50 minutes for one subject, not worth blindly recomputing on every retry).
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes

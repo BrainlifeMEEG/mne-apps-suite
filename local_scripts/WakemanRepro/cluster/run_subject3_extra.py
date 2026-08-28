@@ -28,6 +28,28 @@ meg_out_dir (unlike run_subject_chain.py) -- it only adds files alongside
 what's already there; the (a)/(b)/(c) filenames never collide (l_freq and
 tsss are both embedded in every output filename).
 
+Two fixes applied here, not in the original scripts (see GLITCHES.md,
+"Cluster smoke test" section for the same root cause elsewhere):
+- `mne.preprocessing.ICA.save()`, `mne.Evoked.save()`, and
+  `mne.Epochs.save()` all default to `overwrite=False` in current MNE
+  (confirmed via inspect.signature, not assumed) -- same systemic gap
+  already documented for 02/05/06 generally. For the tsss branch
+  specifically, 06's own `ica_name`/`ica_out_name` are the SAME file (read
+  then overwritten in one execution, by the script's own design) -- so
+  that one fails on a genuinely FIRST run, not just a rerun; the
+  Evoked/Epochs writes fail on RERUNS after any earlier partial failure
+  (06 writes several files progressively -- ecg-ave.fif, eog-ave.fif, the
+  ICA solution, then epo.fif -- so a failure partway through leaves real,
+  not-actually-stale-content files behind that the next attempt must
+  legitimately overwrite). All three fixed via process-scoped monkeypatches,
+  not edits to the original scripts.
+- 03-maxwell_filtering.py takes ~50 min for one subject (6 runs x 2
+  st_durations, each a from-scratch tSSS recompute) but IS internally
+  idempotent (its own raw.save() already passes overwrite=True) -- skip
+  re-running it if all 12 expected output files already exist, so a retry
+  after a downstream failure (like the ones these monkeypatches address)
+  doesn't waste that time recomputing something already done.
+
 Usage: python3 run_subject3_extra.py
 """
 import ast
@@ -35,6 +57,31 @@ import os
 import resource
 import sys
 import time
+
+import mne
+
+_orig_ica_save = mne.preprocessing.ICA.save
+_orig_evoked_save = mne.Evoked.save
+_orig_epochs_save = mne.Epochs.save
+
+
+def _ica_save_overwrite(self, fname, overwrite=None, verbose=None):
+    return _orig_ica_save(self, fname, overwrite=True, verbose=verbose)
+
+
+def _evoked_save_overwrite(self, fname, *, overwrite=False, verbose=None):
+    return _orig_evoked_save(self, fname, overwrite=True, verbose=verbose)
+
+
+def _epochs_save_overwrite(self, fname, split_size="2GB", fmt="single",
+                           overwrite=False, split_naming="neuromag", verbose=None):
+    return _orig_epochs_save(self, fname, split_size=split_size, fmt=fmt,
+                             overwrite=True, split_naming=split_naming, verbose=verbose)
+
+
+mne.preprocessing.ICA.save = _ica_save_overwrite
+mne.Evoked.save = _evoked_save_overwrite
+mne.Epochs.save = _epochs_save_overwrite
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ORIGINAL_SCRIPTS = os.path.normpath(os.path.join(HERE, "..", "original_scripts"))
@@ -75,10 +122,18 @@ def log(msg):
 import library.config as cfgmod
 
 # --- (c) tSSS path: 03, then tsss branches of 05/06/07/08 ---
-log("=== 03-maxwell_filtering (subject 3 only, never run before this) ===")
-ns03 = load_verbatim("03-maxwell_filtering.py", 1, ["Expr"])
-ns03["run_maxwell_filter"](subject_id=SUBJECT_ID)
-log("03 done")
+_meg_dir_sub3 = os.path.join(cfgmod.meg_dir, "sub%03d" % SUBJECT_ID)
+_expected_03_outputs = [
+    os.path.join(_meg_dir_sub3, "run_%02d_filt_tsss_%d_raw.fif" % (run, st))
+    for run in range(1, 7) for st in (10, 1)
+]
+if all(os.path.exists(p) for p in _expected_03_outputs):
+    log("=== 03-maxwell_filtering: all 12 outputs already exist, skipping recompute ===")
+else:
+    log("=== 03-maxwell_filtering (subject 3 only, never run before this) ===")
+    ns03 = load_verbatim("03-maxwell_filtering.py", 1, ["Expr"])
+    ns03["run_maxwell_filter"](subject_id=SUBJECT_ID)
+    log("03 done")
 
 for tsss in (10, 1):
     log(f"=== 05-run_ica tsss={tsss} ===")
