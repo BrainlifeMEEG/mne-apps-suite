@@ -1,0 +1,1545 @@
+[
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 13,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG008",
+      "EEG017",
+      "EEG018",
+      "EEG019",
+      "EEG025",
+      "EEG026",
+      "EEG027",
+      "EEG030",
+      "EEG036",
+      "EEG055",
+      "EEG067",
+      "EEG071",
+      "EEG072"
+    ]
+  },
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 2,
+    "wh_count": 1,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [
+      "EEG009"
+    ],
+    "det": [
+      "EEG053",
+      "EEG054"
+    ]
+  },
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 2,
+    "name": "subject_02",
+    "sub_bids": "sub-01",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG030",
+      "EEG035",
+      "EEG042",
+      "EEG072"
+    ]
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG042",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG036"
+    ]
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 3,
+    "wh_count": 1,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG025"
+    ],
+    "det": [
+      "EEG069"
+    ]
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG019",
+      "EEG031",
+      "EEG036",
+      "EEG048"
+    ]
+  },
+  {
+    "openfmri_id": 3,
+    "name": "subject_03",
+    "sub_bids": "sub-02",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 13,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG003",
+      "EEG022",
+      "EEG023",
+      "EEG028",
+      "EEG039",
+      "EEG048",
+      "EEG049",
+      "EEG060",
+      "EEG065",
+      "EEG066",
+      "EEG068",
+      "EEG070",
+      "EEG072"
+    ]
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG025"
+    ]
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001",
+      "EEG021",
+      "EEG036",
+      "EEG040"
+    ]
+  },
+  {
+    "openfmri_id": 4,
+    "name": "subject_05",
+    "sub_bids": "sub-03",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 6,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001",
+      "EEG020",
+      "EEG021",
+      "EEG025",
+      "EEG036",
+      "EEG046"
+    ]
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 1,
+    "wh_count": 1,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG073"
+    ],
+    "det": [
+      "EEG045"
+    ]
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 3,
+    "wh_count": 8,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG005",
+      "EEG008",
+      "EEG009",
+      "EEG010",
+      "EEG016",
+      "EEG017",
+      "EEG030"
+    ],
+    "det": [
+      "EEG044"
+    ]
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 5,
+    "wh_count": 8,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG005",
+      "EEG008",
+      "EEG009",
+      "EEG010",
+      "EEG016",
+      "EEG017",
+      "EEG030"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 6,
+    "name": "subject_08",
+    "sub_bids": "sub-05",
+    "run": 6,
+    "wh_count": 1,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 15,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG007",
+      "EEG008",
+      "EEG015",
+      "EEG017",
+      "EEG018",
+      "EEG019",
+      "EEG044",
+      "EEG046",
+      "EEG048",
+      "EEG052",
+      "EEG054",
+      "EEG057",
+      "EEG058",
+      "EEG059",
+      "EEG068"
+    ]
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG008",
+      "EEG017",
+      "EEG023",
+      "EEG054"
+    ]
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001"
+    ]
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG038",
+      "EEG050",
+      "EEG051"
+    ]
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001",
+      "EEG038",
+      "EEG057"
+    ]
+  },
+  {
+    "openfmri_id": 7,
+    "name": "subject_09",
+    "sub_bids": "sub-06",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG018",
+      "EEG029",
+      "EEG050"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG040"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG040"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG029",
+      "EEG050"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG003",
+      "EEG024"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 5,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG003",
+      "EEG024",
+      "EEG034",
+      "EEG044",
+      "EEG050"
+    ]
+  },
+  {
+    "openfmri_id": 8,
+    "name": "subject_10",
+    "sub_bids": "sub-07",
+    "run": 6,
+    "wh_count": 2,
+    "det_count": 5,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG008"
+    ],
+    "det": [
+      "EEG006",
+      "EEG013",
+      "EEG014",
+      "EEG019",
+      "EEG057"
+    ]
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG056",
+      "EEG072",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 30,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG003",
+      "EEG007",
+      "EEG008",
+      "EEG011",
+      "EEG012",
+      "EEG013",
+      "EEG014",
+      "EEG015",
+      "EEG016",
+      "EEG017",
+      "EEG018",
+      "EEG022",
+      "EEG029",
+      "EEG030",
+      "EEG039",
+      "EEG040",
+      "EEG041",
+      "EEG042",
+      "EEG047",
+      "EEG048",
+      "EEG049",
+      "EEG050",
+      "EEG051",
+      "EEG052",
+      "EEG059",
+      "EEG060",
+      "EEG065",
+      "EEG066",
+      "EEG072",
+      "EEG074"
+    ]
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG004",
+      "EEG026",
+      "EEG055"
+    ]
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 9,
+    "name": "subject_11",
+    "sub_bids": "sub-08",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG030",
+      "EEG041"
+    ]
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG030",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 2,
+    "wh_count": 7,
+    "det_count": 5,
+    "overlap_count": 4,
+    "wh": [
+      "EEG006",
+      "EEG013",
+      "EEG023",
+      "EEG034",
+      "EEG043",
+      "EEG045",
+      "EEG047"
+    ],
+    "det": [
+      "EEG006",
+      "EEG043",
+      "EEG044",
+      "EEG045",
+      "EEG047"
+    ]
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 3,
+    "wh_count": 5,
+    "det_count": 7,
+    "overlap_count": 1,
+    "wh": [
+      "EEG004",
+      "EEG008",
+      "EEG043",
+      "EEG045",
+      "EEG047"
+    ],
+    "det": [
+      "EEG001",
+      "EEG027",
+      "EEG039",
+      "EEG045",
+      "EEG054",
+      "EEG058",
+      "EEG067"
+    ]
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 4,
+    "wh_count": 4,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG043",
+      "EEG045",
+      "EEG047",
+      "EEG071"
+    ],
+    "det": [
+      "EEG039"
+    ]
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 5,
+    "wh_count": 3,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG007",
+      "EEG008"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 10,
+    "name": "subject_12",
+    "sub_bids": "sub-09",
+    "run": 6,
+    "wh_count": 2,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG008"
+    ],
+    "det": [
+      "EEG025"
+    ]
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 8,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG012",
+      "EEG013",
+      "EEG014",
+      "EEG022",
+      "EEG024",
+      "EEG050",
+      "EEG068",
+      "EEG071"
+    ]
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG015",
+      "EEG016",
+      "EEG025"
+    ]
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 8,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG013",
+      "EEG018",
+      "EEG029",
+      "EEG030",
+      "EEG036",
+      "EEG041",
+      "EEG047",
+      "EEG059"
+    ]
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG034"
+    ]
+  },
+  {
+    "openfmri_id": 11,
+    "name": "subject_14",
+    "sub_bids": "sub-04",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG046"
+    ]
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG003",
+      "EEG043",
+      "EEG048"
+    ]
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 13,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG028",
+      "EEG031",
+      "EEG033",
+      "EEG034",
+      "EEG037",
+      "EEG038",
+      "EEG042",
+      "EEG044",
+      "EEG046",
+      "EEG051",
+      "EEG052",
+      "EEG053",
+      "EEG055"
+    ]
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 7,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG021",
+      "EEG033",
+      "EEG034",
+      "EEG035",
+      "EEG036",
+      "EEG037",
+      "EEG051"
+    ]
+  },
+  {
+    "openfmri_id": 12,
+    "name": "subject_15",
+    "sub_bids": "sub-10",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG031",
+      "EEG038",
+      "EEG048"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG010",
+      "EEG019",
+      "EEG044"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG044"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG071"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 11,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG006",
+      "EEG013",
+      "EEG014",
+      "EEG020",
+      "EEG022",
+      "EEG033",
+      "EEG055",
+      "EEG056",
+      "EEG068",
+      "EEG071",
+      "EEG072"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG016",
+      "EEG018",
+      "EEG067"
+    ]
+  },
+  {
+    "openfmri_id": 13,
+    "name": "subject_16",
+    "sub_bids": "sub-11",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 7,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG009",
+      "EEG018",
+      "EEG019",
+      "EEG020",
+      "EEG034",
+      "EEG037",
+      "EEG046"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 1,
+    "wh_count": 3,
+    "det_count": 6,
+    "overlap_count": 2,
+    "wh": [
+      "EEG016",
+      "EEG024",
+      "EEG029"
+    ],
+    "det": [
+      "EEG009",
+      "EEG010",
+      "EEG016",
+      "EEG028",
+      "EEG029",
+      "EEG050"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 2,
+    "wh_count": 4,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG004",
+      "EEG008",
+      "EEG016",
+      "EEG024"
+    ],
+    "det": [
+      "EEG038"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 3,
+    "wh_count": 5,
+    "det_count": 2,
+    "overlap_count": 1,
+    "wh": [
+      "EEG004",
+      "EEG008",
+      "EEG016",
+      "EEG024",
+      "EEG028"
+    ],
+    "det": [
+      "EEG028",
+      "EEG052"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 4,
+    "wh_count": 4,
+    "det_count": 6,
+    "overlap_count": 0,
+    "wh": [
+      "EEG008",
+      "EEG024",
+      "EEG069",
+      "EEG070"
+    ],
+    "det": [
+      "EEG041",
+      "EEG047",
+      "EEG049",
+      "EEG052",
+      "EEG066",
+      "EEG067"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 5,
+    "wh_count": 6,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG008",
+      "EEG016",
+      "EEG024",
+      "EEG034",
+      "EEG046",
+      "EEG070"
+    ],
+    "det": [
+      "EEG038"
+    ]
+  },
+  {
+    "openfmri_id": 14,
+    "name": "subject_17",
+    "sub_bids": "sub-12",
+    "run": 6,
+    "wh_count": 5,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG024",
+      "EEG039",
+      "EEG046",
+      "EEG057",
+      "EEG070"
+    ],
+    "det": [
+      "EEG029"
+    ]
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG017",
+      "EEG019",
+      "EEG072"
+    ]
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 2,
+    "wh_count": 1,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG056"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG042"
+    ]
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001",
+      "EEG021"
+    ]
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 8,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG001",
+      "EEG018",
+      "EEG019",
+      "EEG021",
+      "EEG022",
+      "EEG026",
+      "EEG055",
+      "EEG066"
+    ]
+  },
+  {
+    "openfmri_id": 15,
+    "name": "subject_18",
+    "sub_bids": "sub-13",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 1,
+    "wh_count": 1,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [
+      "EEG029"
+    ],
+    "det": [
+      "EEG038",
+      "EEG041",
+      "EEG071",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 3,
+    "wh_count": 1,
+    "det_count": 1,
+    "overlap_count": 1,
+    "wh": [
+      "EEG029"
+    ],
+    "det": [
+      "EEG029"
+    ]
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG044"
+    ]
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 5,
+    "wh_count": 0,
+    "det_count": 8,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG034",
+      "EEG045",
+      "EEG047",
+      "EEG053",
+      "EEG055",
+      "EEG058",
+      "EEG067",
+      "EEG069"
+    ]
+  },
+  {
+    "openfmri_id": 17,
+    "name": "subject_23",
+    "sub_bids": "sub-14",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG041",
+      "EEG043"
+    ]
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 1,
+    "wh_count": 0,
+    "det_count": 3,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG004",
+      "EEG018",
+      "EEG060"
+    ]
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 2,
+    "wh_count": 0,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [],
+    "det": []
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 3,
+    "wh_count": 0,
+    "det_count": 5,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG016",
+      "EEG018",
+      "EEG025",
+      "EEG027",
+      "EEG034"
+    ]
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 4,
+    "wh_count": 0,
+    "det_count": 4,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG027",
+      "EEG030",
+      "EEG042",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 5,
+    "wh_count": 1,
+    "det_count": 6,
+    "overlap_count": 1,
+    "wh": [
+      "EEG054"
+    ],
+    "det": [
+      "EEG015",
+      "EEG034",
+      "EEG039",
+      "EEG054",
+      "EEG066",
+      "EEG073"
+    ]
+  },
+  {
+    "openfmri_id": 18,
+    "name": "subject_24",
+    "sub_bids": "sub-15",
+    "run": 6,
+    "wh_count": 0,
+    "det_count": 5,
+    "overlap_count": 0,
+    "wh": [],
+    "det": [
+      "EEG032",
+      "EEG042",
+      "EEG044",
+      "EEG066",
+      "EEG069"
+    ]
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 1,
+    "wh_count": 2,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": [
+      "EEG009"
+    ]
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 2,
+    "wh_count": 2,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": [
+      "EEG048"
+    ]
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 3,
+    "wh_count": 2,
+    "det_count": 2,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": [
+      "EEG013",
+      "EEG025"
+    ]
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 4,
+    "wh_count": 2,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 5,
+    "wh_count": 2,
+    "det_count": 0,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": []
+  },
+  {
+    "openfmri_id": 19,
+    "name": "subject_25",
+    "sub_bids": "sub-16",
+    "run": 6,
+    "wh_count": 2,
+    "det_count": 1,
+    "overlap_count": 0,
+    "wh": [
+      "EEG002",
+      "EEG008"
+    ],
+    "det": [
+      "EEG031"
+    ]
+  }
+]
