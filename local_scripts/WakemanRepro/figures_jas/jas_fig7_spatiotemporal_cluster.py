@@ -29,6 +29,10 @@ original_scripts/results/statistics/plot_sensor_spatio_temporal_cluster_stats.py
     `plot_topomap`'s own docstring that it accepts an `Info` object
     directly (inferring proper x/y from the montage) when it contains
     exactly one channel type and `len(data)` channels, both true here.
+  - `sphere=None` (the default) auto-fits a sphere to this subject's head-
+    shape digitization points, and that fit is off-center for this dataset
+    (see EEG_SPHERE below) -- skewing the electrode grid up and off-center
+    relative to the drawn head outline. Fixed with an explicit sphere.
   - output path points at figures_jas/ instead of a relative '../figures/'.
 """
 import os
@@ -109,6 +113,19 @@ linestyles = '-', '--'
 
 pos = contrast.info  # head-normalized coords inferred from the montage
 
+# sphere=None (plot_topomap's default) fits a sphere to this subject's own
+# head-shape digitization points -- for this dataset that fit is off-center
+# (MNE's own runtime warning: "(X, Y) fit ... more than 20 mm from head
+# frame origin"), which visibly skewed the electrode grid up and off-center
+# relative to the drawn head outline (confirmed by comparing sphere=None vs.
+# a fixed sphere side by side -- the fixed version lines the ears up at a
+# normal height and spreads electrodes evenly across the head, matching the
+# published figure much more closely; the auto-fit version crams them near
+# the vertex). Using this fixed origin is also MNE's own documented fallback
+# value for when no good digitization fit is available (see plot_topomap's
+# `sphere` docstring) -- not an arbitrary number.
+EEG_SPHERE = (0, 0, 0, 0.095)
+
 T_obs_max = 5.
 T_obs_min = -T_obs_max
 
@@ -132,7 +149,7 @@ for i_clu, clu_idx in enumerate(good_cluster_inds):
     fig, ax_topo = plt.subplots(1, 1, figsize=(7, 2.))
 
     image, _ = plot_topomap(T_obs_map, pos, mask=mask, axes=ax_topo,
-                            vlim=(T_obs_min, T_obs_max), show=False)
+                            vlim=(T_obs_min, T_obs_max), sphere=EEG_SPHERE, show=False)
 
     divider = make_axes_locatable(ax_topo)
     ax_colorbar = divider.append_axes('right', size='5%', pad=0.05)

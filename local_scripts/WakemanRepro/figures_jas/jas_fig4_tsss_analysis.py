@@ -44,6 +44,14 @@ the docstring) -- it's drawn as a real inset Axes
 butterfly panel's bounding box), found by inspecting `fig.axes` directly,
 so it's removed by class name after the fact instead.
 
+Topomap insets pass an explicit `sphere=` (see MEG_SPHERE below) instead
+of the default `sphere=None` (auto-fit to this subject's head-shape
+digitization points): that auto-fit is measurably off-center for this
+dataset (MNE's own runtime warning), which visibly distorted the
+projection -- a fixed origin plus a radius large enough to actually
+contain the magnetometer helmet's sensor spread (confirmed empirically,
+not guessed) fixes it. Full reasoning next to MEG_SPHERE's definition.
+
 plot_joint() always builds its own standalone figure (no `axes=` embedding
 without fiddly ts_args/topomap_args coordination -- checked the docstring,
 not assumed), so the three conditions are rendered separately and
@@ -70,6 +78,24 @@ SUBJECT = "sub003"
 data_path = os.path.join(meg_dir, SUBJECT)
 TIMES = [0, 0.12, 0.4, 2.8]  # seconds -- matches the published figure's own labels
 
+# sphere=None (plot_topomap's default) fits a sphere to this subject's head-shape
+# digitization points -- for this dataset that fit is off-center (MNE's own
+# runtime warning: "(X, Y) fit ... more than 20 mm from head frame origin"),
+# which visibly skews the topomap projection. Using a fixed origin (MNE's own
+# documented fallback value for when no good digitization fit is available --
+# see plot_topomap's `sphere` docstring) avoids that. Radius alone is bumped
+# from the 0.095 fallback default to 0.19: confirmed empirically (via the
+# private _find_topomap_coords helper, not guessed) that this dataset's
+# magnetometer 3D->2D projected positions have a FIXED max radius (~0.171 m)
+# independent of the sphere radius passed in -- only the origin affects where
+# channels land, radius only sets how big a circle is drawn around them. The
+# 0.095 default is smaller than that 0.171 m sensor spread (a real geometric
+# fact: MEG helmets wrap around the head much further than an EEG cap sits on
+# top of it), so sensors spilled outside the drawn head circle. 0.19 (>0.171,
+# some margin) draws a circle that actually contains the full sensor helmet,
+# matching the published figure's compact, non-overflowing look.
+MEG_SPHERE = (0, 0, 0, 0.19)
+
 conditions = [
     ("A", "No highpass", os.path.join(data_path, f"{SUBJECT}_highpass-NoneHz-ave.fif")),
     ("B", "1 Hz highpass", os.path.join(data_path, f"{SUBJECT}_highpass-1Hz-ave.fif")),
@@ -85,7 +111,7 @@ for letter, label, fname in conditions:
         continue
     famous_evo = mne.read_evokeds(fname, condition="famous")
     fig = famous_evo.plot_joint(times=TIMES, picks="mag", title=f"{letter}. {label}",
-                                show=False)
+                                topomap_args=dict(sphere=MEG_SPHERE), show=False)
     # plot_joint()'s butterfly panel defaults to spatial_colors=True (kept,
     # matches the paper's own colored traces) but that also draws a small
     # inset Axes -- an AxesHostAxes nested inside the main butterfly axes'

@@ -302,6 +302,46 @@ User review of `figures_jas/jas_figures_comparison.pdf` turned up three more iss
   docstring); removed by finding it by class name (`type(ax).__name__ == "AxesHostAxes"`) and
   calling `fig.delaxes()` on it, after the figure is built.
 
+## Figure comparison, round 2: topomap projection was genuinely wrong (2026-08-28)
+
+User review of the round-1 fixes above found Fig 4's and Fig 7's topomaps still didn't match the
+published figures: Fig 4's magnetometer topographies spread much wider than the paper's (electrodes
+spilling well past the drawn head-outline circle); Fig 7's electrode grid sat too high/off-center
+relative to the head outline. Root cause, confirmed empirically (via MNE's own private
+`_check_sphere`/`_find_topomap_coords` helpers, not guessed) and shared by both:
+
+`plot_topomap`'s (and `plot_joint`'s `topomap_args`'s) `sphere=None` default auto-fits a sphere to
+the subject's own head-shape digitization points. For this dataset that fit is genuinely off-center
+-- `mne.bem.fit_sphere_to_headshape` itself raises `RuntimeWarning: (X, Y) fit (1.0, 29.0) more than
+20 mm from head frame origin` at runtime, i.e. MNE is telling us the fit is bad. That skew visibly
+distorted both figures' projections (confirmed by rendering `sphere=None` vs. a fixed sphere side by
+side: the fixed version centers the electrode/sensor grid properly, matching the paper far more
+closely).
+
+Fixed with an explicit fixed sphere instead of relying on the auto-fit, for both figures:
+- **Fig 7 (EEG)**: `sphere=(0, 0, 0, 0.095)` -- this is MNE's own documented fallback value (see
+  `plot_topomap`'s `sphere` docstring: "`None` ... is equivalent to `(0, 0, 0, 0.095)`" when no good
+  digitization fit is available), not an arbitrary number. Confirmed visually: ears line up at a
+  normal height, electrodes spread evenly, matching the published figure closely.
+- **Fig 4 (MEG magnetometers)**: same fixed origin, but the *radius* also needed to grow from that
+  0.095 fallback to 0.19. Confirmed empirically that `_find_topomap_coords`'s projected 2D sensor
+  positions have a radius-INDEPENDENT extent for this dataset (~0.171 m max, regardless of what
+  sphere radius is passed) -- only the sphere's *origin* affects where channels land; radius only
+  sets how big a circle gets drawn around them and how far `extrapolate='head'`/`'local'` extend. A
+  full MEG helmet's sensors genuinely sit further from the head center than a typical EEG cap (they
+  wrap around toward the ears/back of the head), so the 0.095 m default head-circle was smaller than
+  the actual sensor spread, and every sensor spilled outside the drawn circle no matter which
+  `extrapolate` mode was used (`extrapolate='head'`'s own docstring even warns of this: "can extend
+  beyond the head when sensors are plotted outside the head circle"). Drawing a bigger circle (0.19
+  m, >0.171 m with margin) that actually contains the real sensor spread fixes it -- this doesn't
+  change the underlying projected positions at all, just how big a reference circle is drawn around
+  them.
+
+Also ruled out along the way: `mne.channels.find_layout()`/`read_layout('Vectorview-mag')` (the
+legacy flat manufacturer-grid layout, same box-position family already known bad from Fig 7's round-1
+fix) -- tested explicitly as a candidate for Fig 4's MEG positions too, confirmed equally wrong (same
+box-coordinate-as-spatial-position confusion), not just assumed wrong by association.
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes
