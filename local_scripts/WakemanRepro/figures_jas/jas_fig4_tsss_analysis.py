@@ -23,22 +23,31 @@ subject 3 (see cluster/run_subject3_extra.py for how each was produced):
 
 Reads the 'famous' evoked condition specifically (not the combined
 'faces') -- checked against the actual published figure
-(figures/paper_figure4_reference.png, fetched from frontiersin.org) after
-an initial draft used 'faces': the real Figure 4 caption/panel content is
-famous faces only.
+(figures_jas/paper_figure4_reference.png, fetched from frontiersin.org)
+after an initial draft used 'faces': the real Figure 4 caption/panel
+content is famous faces only.
 
 Restricted to magnetometers (`picks='mag'`, y-axis in fT): the published
 figure's y-axis unit (fT, not fT/cm) confirms magnetometers specifically,
 consistent with the paper's own figure list description ("evoked responses
-in magnetometers"). Also sidesteps a real API mismatch:
-`Evoked.plot(axes=<single Axes>)` requires one axes PER channel type
-present (3, for eeg+grad+mag) unless picks restricts to a single type,
-confirmed by running this and reading the resulting ValueError, not
-assumed upfront.
+in magnetometers").
 
-Layout (1x3, panels A/B/C) matches the published figure's own layout,
-though without its little per-timepoint topomap insets (0/120/400/2800 ms)
--- a cosmetic difference, not a data difference.
+Uses `Evoked.plot_joint(times=[0, 0.12, 0.4, 2.8], ...)` -- topomap insets
+at the published figure's own four timepoints, connected to the butterfly
+trace by lines, matching its actual layout. Keeps `spatial_colors=True`
+(plot_joint's own default) for the colored traces, matching the published
+figure's own style -- but that inset sensor-position-color-legend circle
+in the corner isn't wanted (per feedback). There's no plot()/plot_joint()
+kwarg to suppress just the inset while keeping colored traces (checked
+the docstring) -- it's drawn as a real inset Axes
+(`mpl_toolkits.axes_grid1`'s `AxesHostAxes`, nested inside the main
+butterfly panel's bounding box), found by inspecting `fig.axes` directly,
+so it's removed by class name after the fact instead.
+
+plot_joint() always builds its own standalone figure (no `axes=` embedding
+without fiddly ts_args/topomap_args coordination -- checked the docstring,
+not assumed), so the three conditions are rendered separately and
+composited into one 1x3 page here.
 """
 import os
 import sys
@@ -46,18 +55,20 @@ import sys
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import mne
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ORIGINAL_SCRIPTS = os.path.normpath(os.path.join(HERE, "..", "original_scripts"))
 sys.path.insert(0, ORIGINAL_SCRIPTS)
-from library.config import meg_dir, ylim, set_matplotlib_defaults, annot_kwargs  # noqa: E402
+from library.config import meg_dir, set_matplotlib_defaults  # noqa: E402
 
 OUT_DIR = HERE
 os.makedirs(OUT_DIR, exist_ok=True)
 
 SUBJECT = "sub003"
 data_path = os.path.join(meg_dir, SUBJECT)
+TIMES = [0, 0.12, 0.4, 2.8]  # seconds -- matches the published figure's own labels
 
 conditions = [
     ("A", "No highpass", os.path.join(data_path, f"{SUBJECT}_highpass-NoneHz-ave.fif")),
@@ -66,23 +77,42 @@ conditions = [
 ]
 
 set_matplotlib_defaults()
-fig, axes = plt.subplots(1, 3, figsize=(9, 3), sharey=True)
+panel_pngs = []
 
-for ax, (letter, label, fname) in zip(axes, conditions):
+for letter, label, fname in conditions:
     if not os.path.exists(fname):
-        ax.set_title(f"{label} -- MISSING")
         print(f"[jas_fig4] WARNING: missing {fname} -- run cluster/run_subject3_extra.py first")
         continue
     famous_evo = mne.read_evokeds(fname, condition="famous")
-    famous_evo.plot(spatial_colors=True, gfp=False, ylim={"mag": ylim["mag"]},
-                    picks="mag", axes=ax, show=False)
-    ax.set_title(label)
-    ax.annotate(letter, (-0.15, 1.05), xycoords="axes fraction",
-               fontsize=12, fontweight="bold")
+    fig = famous_evo.plot_joint(times=TIMES, picks="mag", title=f"{letter}. {label}",
+                                show=False)
+    # plot_joint()'s butterfly panel defaults to spatial_colors=True (kept,
+    # matches the paper's own colored traces) but that also draws a small
+    # inset Axes -- an AxesHostAxes nested inside the main butterfly axes'
+    # bounding box -- showing a sensor-position color-legend circle. Not
+    # wanted (per feedback); there's no plot_joint()/plot() kwarg to
+    # suppress just the inset while keeping colored traces (checked the
+    # docstring), so it's found by class name and removed directly.
+    for legend_ax in [a for a in fig.axes if type(a).__name__ == "AxesHostAxes"]:
+        fig.delaxes(legend_ax)
+    png_path = os.path.join(OUT_DIR, f"_tmp_jas_fig4_panel_{letter}.png")
+    fig.savefig(png_path, dpi=150)
+    plt.close(fig)
+    panel_pngs.append(png_path)
     print(f"[jas_fig4] loaded {fname} (nave={famous_evo.nave})")
 
+fig, axes = plt.subplots(1, len(panel_pngs), figsize=(5 * len(panel_pngs), 4.5))
+if len(panel_pngs) == 1:
+    axes = [axes]
+for ax, png_path in zip(axes, panel_pngs):
+    ax.imshow(mpimg.imread(png_path))
+    ax.axis("off")
 fig.suptitle(f"{SUBJECT}: famous faces")
-fig.tight_layout(pad=0.5)
+fig.tight_layout()
+
 out_path = os.path.join(OUT_DIR, "jas_fig4_tsss_analysis_sub003_famous.pdf")
 fig.savefig(out_path)
+plt.close(fig)
+for p in panel_pngs:
+    os.remove(p)
 print(f"[jas_fig4] saved {out_path}")

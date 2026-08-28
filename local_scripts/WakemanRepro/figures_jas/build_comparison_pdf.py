@@ -36,13 +36,12 @@ PAGES = [
     dict(n=4, title="Baseline vs. highpass vs. tSSS (subject 3, famous faces)",
          paper="paper_figure4_reference.png",
          ours=["jas_fig4_tsss_analysis_sub003_famous.pdf"],
-         note="No per-timepoint topomap insets (cosmetic only, not a data difference)."),
+         note=None),
     dict(n=5, title="Grand-average evoked (EEG065)",
          paper="paper_figure5_reference.png",
-         ours=["jas_fig5_grand_average_highpass-NoneHz.pdf"],
-         note="Panel A only (l_freq=None). Panel B (l_freq=1) would need 06/07 "
-              "re-run for all 16 subjects under l_freq=1 -- not done, out of "
-              "scope for this clean-up."),
+         ours=["jas_fig5_grand_average_highpass-NoneHz.pdf",
+              "jas_fig5_grand_average_highpass-1Hz.pdf"],
+         note=None),
     dict(n=6, title="Sensor-space statistics: cluster stats (A) + decoding (B)",
          paper="paper_figure6_reference.png",
          ours=["jas_fig6a_sensor_cluster_stats_highpass-NoneHz.pdf",

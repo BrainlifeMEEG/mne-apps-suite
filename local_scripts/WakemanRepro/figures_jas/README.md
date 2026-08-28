@@ -11,7 +11,7 @@ source-space and stay out of scope — standing project decision).
 | 2 | `jas_fig2_psd.py` | `jas_fig2_psd_S09.png` |
 | 3 | `jas_fig3_filter_response.py` (+ `jas_fig3_compute_old_mne_012_filters.py`, `old_mne_012_reference/`) | `jas_fig3_filter_response.png` |
 | 4 | `jas_fig4_tsss_analysis.py` | `jas_fig4_tsss_analysis_sub003_famous.pdf` |
-| 5 | `jas_fig5_grand_average.py` | `jas_fig5_grand_average_highpass-NoneHz.pdf` (panel A only, see below) |
+| 5 | `jas_fig5_grand_average.py` (panel A) + `cluster/build_fig5_panel_b.py` (panel B) | `jas_fig5_grand_average_highpass-{NoneHz,1Hz}.pdf` |
 | 6A/B | `jas_fig6a_sensor_cluster_stats.py`, `jas_fig6b_decoding.py` | matching `.pdf`/`.png` |
 | 7 | `jas_fig7_spatiotemporal_cluster.py` | `jas_fig7_spatiotemporal_cluster_highpass-NoneHz-00.pdf` |
 | 99 | `99_reports_sensor_only.py` (sensor-only adaptation of `original_scripts/99-make_reports.py`) | `report_sensor_sub*.html`, `report_sensor_average.html` |
@@ -29,14 +29,10 @@ committed** — not ours to redistribute. If missing, refetch from
 
 ## Known gaps
 
-- **Figure 5 is panel A only** (`l_freq=None`, all 16 subjects). Panel B
-  (`l_freq=1`) needs `07-make_evoked.py` re-run for all 16 subjects under
-  `config.l_freq=1` (currently only subject 3 has that, via
-  `cluster/run_subject3_extra.py`, for Figure 4) — a full second 16-subject
-  array pass, not done here.
-- **Figure 4 has no per-timepoint topomap insets** (the published figure's
-  little head-shaped insets at 0/120/400/2800 ms) — cosmetic difference,
-  not a data difference.
+None currently open. See `../original_scripts/GLITCHES.md`'s Phase 7
+sections for how the earlier gaps (Figure 5 panel B needing a 16-subject
+`l_freq=1` rerun of 06/07; Figure 4's topomap insets; Figure 7's
+`find_layout`/`plot_topomap` position bug) were resolved.
 
 See `../original_scripts/GLITCHES.md`'s Phase 7 sections for the full
 methodology writeup (API fixes, overwrite-gap fixes, everything checked

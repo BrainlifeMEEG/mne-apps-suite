@@ -258,6 +258,50 @@ Fixed in `cluster/run_subject3_extra.py` via process-scoped monkeypatches of all
 call (itself internally idempotent -- its own `raw.save()` already passes `overwrite=True` -- but
 takes ~50 minutes for one subject, not worth blindly recomputing on every retry).
 
+## Figure comparison follow-up fixes (2026-08-28)
+
+User review of `figures_jas/jas_figures_comparison.pdf` turned up three more issues, all now fixed:
+
+- **Fig 7's topomap had every electrode clustered in one corner.** Root cause:
+  `pos = mne.find_layout(contrast.info).pos` -- a `Layout`'s `.pos` is a legacy `(x, y, width,
+  height)` 2D grid-box array for the old flat layout view, not head-normalized sensor coordinates.
+  Using its first two columns as topomap `x`/`y` collapses real sensor geometry into a small
+  clustered region. Fixed by passing `contrast.info` directly as `pos` to `plot_topomap()` --
+  confirmed via that function's own docstring that it accepts an `Info` object directly (inferring
+  proper positions from the montage) when it has exactly one channel type and `len(data)` channels,
+  both true here. Verified visually after the fix: proper head outline, electrodes spread over a
+  central-frontal region, matching the published figure.
+- **Fig 5 was missing panel B** (grand-average evoked under `l_freq=1`, vs. panel A's
+  `l_freq=None`) -- not a bug, a real scope gap from the earlier clean-up commit. `jas_fig5_grand_average.py`
+  already parametrizes entirely off `config.l_freq` (input/output filenames, panel-letter
+  annotation) -- it just needed a `l_freq=1` run, which needed `06`+`07` output for all 16 subjects
+  under `l_freq=1` first (only subject 3 had this, from the tSSS branch work). Key insight that
+  avoided a full pipeline rerun: `06`'s ICA *read* path (`ica_name = 'run_concat-ica.fif'`) doesn't
+  depend on `l_freq` at all -- only `ica_out_name`, the exclusion-annotated copy it writes back out,
+  does. So the `l_freq=None` ICA solution (already fit once per subject) is reused as-is; only
+  `06`+`07` needed rerunning, not `03`/`04`/`05`. Built as a 16-subject Slurm array
+  (`cluster/run_subject_lfreq1_epochs.py` + `cluster/submit_lfreq1_epochs.slurm.sh`), then
+  `cluster/build_fig5_panel_b.py` (11's group-average, `l_freq=1`, + `jas_fig5_grand_average.py`,
+  `l_freq=1`) once all 16 completed. Found a **fourth** overwrite-gap variant while running this:
+  `07-make_evoked.py` calls the **module-level** `mne.evoked.write_evokeds()` function directly
+  (not an `Evoked` instance's `.save()`) -- a different call path than the three already known
+  (`ICA.save`, `Evoked.save`, `Epochs.save`); not covered by those monkeypatches, needed its own.
+  Hit for real on subject 3, who already had this exact output file from the earlier tSSS-branch
+  work (a genuine, expected collision on rerun, not a bug). Two subjects (6, 14) also hit the
+  already-documented transient NFS config-lock race on the first array submission -- resolved by
+  resubmitting just those indices, same as before.
+- **Fig 4's topomap insets were cluttered by an unwanted legend.** Rewrote to use
+  `Evoked.plot_joint(times=[0, 0.12, 0.4, 2.8], picks='mag', ...)` instead of a manual per-panel
+  `plot()` call -- `plot_joint()` draws topomap insets at specified times connected by lines to the
+  butterfly trace, matching the published figure's actual layout, and the four times match its own
+  labels. `plot_joint()`'s butterfly panel defaults to `spatial_colors=True` (matches the paper's
+  own colored traces, kept), but that also draws a small inset `Axes` -- confirmed via `fig.axes`
+  inspection to be an `AxesHostAxes` (from `mpl_toolkits.axes_grid1`) nested inside the main
+  butterfly axes' bounding box -- showing a sensor-position color-legend circle, not wanted. No
+  `plot()`/`plot_joint()` kwarg suppresses just that inset while keeping colored traces (checked the
+  docstring); removed by finding it by class name (`type(ax).__name__ == "AxesHostAxes"`) and
+  calling `fig.delaxes()` on it, after the figure is built.
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes

@@ -19,6 +19,16 @@ original_scripts/results/statistics/plot_sensor_spatio_temporal_cluster_stats.py
   - `plot_topomap`'s `vmin=`/`vmax=` kwargs no longer exist -- merged into
     a single `vlim=(vmin, vmax)` tuple in current MNE (confirmed via
     inspect.signature before writing this).
+  - `pos = mne.find_layout(contrast.info).pos` is wrong for this call: a
+    layout's `.pos` is a legacy (x, y, width, height) box-position array
+    for the OLD 2D grid-style layout view, not head-normalized sensor
+    coordinates -- using its first two columns as topomap positions
+    clustered every channel into one corner of the head outline (a real
+    bug, caught visually, not from reading the API). Fixed by passing
+    `contrast.info` directly as `pos` -- confirmed via
+    `plot_topomap`'s own docstring that it accepts an `Info` object
+    directly (inferring proper x/y from the montage) when it contains
+    exactly one channel type and `len(data)` channels, both true here.
   - output path points at figures_jas/ instead of a relative '../figures/'.
 """
 import os
@@ -97,7 +107,7 @@ times = contrast.times * 1e3
 colors = 'r', 'steelblue'
 linestyles = '-', '--'
 
-pos = mne.find_layout(contrast.info).pos
+pos = contrast.info  # head-normalized coords inferred from the montage
 
 T_obs_max = 5.
 T_obs_min = -T_obs_max
