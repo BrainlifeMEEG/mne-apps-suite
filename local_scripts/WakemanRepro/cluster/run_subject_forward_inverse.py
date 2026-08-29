@@ -12,6 +12,23 @@ this project, see GLITCHES.md). `write_forward_solution()` already gets
 Needs run_subject_anatomy.py (BEM+source space) and run_subject_coreg.py
 (trans file) already done for this subject.
 
+`mne.make_forward_solution()`'s own `on_inside='raise'` default (hit for
+real, S04 specifically): with only LPA/RPA to fit against (see
+run_subject_coreg.py's docstring -- nasion + head-shape points are both in
+this dataset's defaced/corrupted region), a handful of subjects' final fit
+still has a small residual error, and for S04 specifically that was enough
+for 27 of 306 MEG sensors to land marginally inside the (single-layer) BEM
+inner-skull surface -- `make_forward_solution()` raises on this by
+default. `on_inside='warn'` is MNE's own documented, non-hacky escape
+hatch for exactly this situation (a real parameter on the function, not a
+workaround) -- used here rather than chasing S04's coregistration further:
+its rotation is already down from the original bug's 163 degrees to -16.7
+degrees (a plausible, if slightly elevated, head-tilt-during-recording
+value), and further nasion-weight tuning was confirmed (empirically, not
+assumed) to have no effect at any magnitude below the point where it
+reintroduces the original large-pitch bug -- there's no smooth middle
+ground to tune into for this subject specifically.
+
 Usage: python3 run_subject_forward_inverse.py <openfmri_subject_id>
 """
 import ast
@@ -72,6 +89,21 @@ def main(subject_id):
 
     mne.SourceEstimate.save = _stc_save_overwrite
     mne.VectorSourceEstimate.save = _vec_stc_save_overwrite
+
+    # See docstring: on_inside='raise' (make_forward_solution's own default)
+    # hits for real on at least one subject given this dataset's coreg
+    # constraints. 12-make_forward.py's own call doesn't pass on_inside,
+    # so patch the default rather than edit that call.
+    _orig_make_fwd = mne.make_forward_solution
+
+    def _make_fwd_lenient(info, trans, src, bem, meg=True, eeg=True, *,
+                          mindist=0.0, ignore_ref=False, n_jobs=None,
+                          on_inside="raise", verbose=None):
+        return _orig_make_fwd(info, trans, src, bem, meg=meg, eeg=eeg, mindist=mindist,
+                              ignore_ref=ignore_ref, n_jobs=n_jobs, on_inside="warn",
+                              verbose=verbose)
+
+    mne.make_forward_solution = _make_fwd_lenient
 
     def load_verbatim(script_name, strip_last_n, expect_kinds=None):
         path = os.path.join(ORIGINAL_SCRIPTS, script_name)

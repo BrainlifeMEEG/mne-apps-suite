@@ -1,17 +1,39 @@
 #!/usr/bin/env python3
 """Recreate Jas et al. 2018 Figure 11: group-average source reconstruction,
 dSPM (left) and LCMV (right), ventral view of the fsaverage inflated
-surface, anterior-posterior running bottom-to-top, right hemisphere on the
-right.
+surface, anterior pointing down, left/right on the figure matching
+anatomical left/right.
 
 Reads cluster/run_group_source_average.py's output
 (`contrast-average_highpass-<l_freq>Hz` for dSPM -- a VectorSourceEstimate,
 `.magnitude()`'d here to get a scalar activation map matching the paper's
 colored heatmap; `contrast-average-lcmv_highpass-<l_freq>Hz` for LCMV --
-already scalar). Both already morphed to fsaverage by that script.
+already scalar). Both already morphed to fsaverage by that script, and
+both were rebuilt after cluster/run_subject_coreg.py's coregistration fix
+(see that script's docstring -- nasion + head-shape points were pulling
+every subject's fit into an unphysical rotation).
 
 Offscreen pyvista rendering (same as Figure 9), one screenshot per method,
 composited into one 1x2 page.
+
+Time point: fixed at t=0.168s (per review feedback), not a peak search.
+
+Orientation: `hemi='both'+views='ventral'` renders anterior at the TOP and
+right hemisphere on the LEFT by default -- confirmed directly, not
+assumed, with two synthetic test stcs (one with data on RH-only vertices,
+one with data on anterior-only LH vertices) rendered and visually
+inspected. The published figure has anterior at the BOTTOM and right
+hemisphere on the right -- a 180-degree image rotation fixes both at once
+(equivalent to flipping both axes simultaneously).
+
+Colorbar: rendered separately in matplotlib (not pyvista's own embedded
+one) using an alpha-ramped colormap so the sub-vmin range -- fully
+transparent in the actual brain render (`transparent=True`) -- reads as
+fading out on the colorbar too, instead of looking like solid opaque
+color all the way to zero (per review feedback: "colorbars should reveal
+transparency"). A first version rendered pyvista's colorbar/text into the
+same raster as the brain -- fragile to flip cleanly (see GLITCHES.md's
+"Figures 11/12: two more real bugs" for why that approach was replaced).
 """
 import os
 import sys
@@ -24,6 +46,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from matplotlib.colors import ListedColormap
 import mne
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -34,8 +57,25 @@ from library.config import meg_dir, subjects_dir, l_freq  # noqa: E402
 OUT_DIR = HERE
 os.makedirs(OUT_DIR, exist_ok=True)
 
+TIME_POINT = 0.168  # seconds -- fixed per review feedback, not a peak search
 
-def render(stc, title, png_path):
+
+def transparent_hot(vmin, vmax, n=256):
+    """'hot' colormap with alpha ramping 0->1 from 0 up to vmin, matching
+    plot_topomap/stc.plot's own transparent=True behavior (values below
+    vmin are fully suppressed in the render) -- so a colorbar built from
+    this looks the same way: faded/transparent below vmin, opaque hot
+    color from vmin to vmax.
+    """
+    base = plt.get_cmap("hot", n)
+    colors = base(np.linspace(0, 1, n))
+    frac_vmin = np.clip(vmin / vmax, 0, 1) if vmax > 0 else 0
+    ramp_end = max(int(frac_vmin * n), 1)
+    colors[:ramp_end, -1] = np.linspace(0, 1, ramp_end)
+    return ListedColormap(colors)
+
+
+def render(stc, png_path):
     # Explicit clim (not MNE's own 'auto' percentile default) so the exact
     # same vmin/vmax can be reused for the matplotlib colorbar drawn in the
     # composite below -- guarantees the two are never out of sync.
@@ -49,22 +89,6 @@ def render(stc, title, png_path):
     # attribute 'add_observer'". Explicitly False since this is a static
     # screenshot, not an interactive session -- confirmed by hitting the
     # crash first, not assumed upfront.
-    #
-    # colorbar=False here, deliberately: hemi='both'+views='ventral' renders
-    # RH on the LEFT of the image (verified directly with a test stc: RH-only
-    # data renders on the image's left side) -- the paper's own Figure 11
-    # caption is explicit ("Right hemisphere is on the right side"), the
-    # opposite convention, so the render needs mirroring. A first attempt
-    # cropped-and-flipped just the "brain region" of the image (leaving
-    # pyvista's own embedded colorbar/text unflipped) using a fixed pixel-row
-    # boundary -- fragile in practice: the real brain content's extent varies
-    # enough between renders that a fixed fraction either clipped real
-    # content or left colorbar text partially flipped (both actually
-    # happened, on different attempts). Cleaner fix: never let pyvista draw
-    # a colorbar into the same raster at all -- flip the whole (now
-    # colorbar-free) image safely, and draw a proper matplotlib colorbar in
-    # the composite figure below instead, using the real vmin/vmax from the
-    # data (not guessed).
     brain = stc.plot(subject="fsaverage", surface="inflated", hemi="both",
                      views="ventral", subjects_dir=subjects_dir,
                      background="white", foreground="black",
@@ -76,8 +100,8 @@ def render(stc, title, png_path):
     brain.close()
 
     from PIL import Image
-    Image.open(png_path).transpose(Image.FLIP_LEFT_RIGHT).save(png_path)
-    print(f"[jas_fig11] rendered {title} -> {png_path} (mirrored L/R)")
+    Image.open(png_path).transpose(Image.ROTATE_180).save(png_path)
+    print(f"[jas_fig11] rendered -> {png_path} (rotated 180: anterior down, R on right)")
     return vmin, vmax
 
 
@@ -87,35 +111,24 @@ lcmv_path = os.path.join(meg_dir, f"contrast-average-lcmv_highpass-{l_freq}Hz")
 dspm_stc = mne.read_source_estimate(dspm_path, "fsaverage").magnitude()
 lcmv_stc = mne.read_source_estimate(lcmv_path, "fsaverage")
 
-# Peak-latency snapshot -- the paper shows a single static time point, not
-# an animation; picking each method's own peak (its own strongest moment)
-# rather than a fixed arbitrary time. Cropped to (None, 0.8) first, matching
-# jas_fig12_source_cluster_stats.py's own crop of the exact same contrast --
-# this data is l_freq=None (no highpass), and picking a peak over the FULL
-# epoch (to 2.9s) first found one at ~2.26s, squarely in the slow-drift
-# region Figs 4/5 already document extensively for this same unfiltered
-# condition -- not the face-processing response this figure is about. Using
-# the paper's own established analysis window instead of an arbitrary one.
-dspm_peak = dspm_stc.copy().crop(None, 0.8).get_peak(vert_as_index=False, time_as_index=False)[1]
-lcmv_peak = lcmv_stc.copy().crop(None, 0.8).get_peak(vert_as_index=False, time_as_index=False)[1]
-dspm_stc_t = dspm_stc.copy().crop(dspm_peak, dspm_peak)
-lcmv_stc_t = lcmv_stc.copy().crop(lcmv_peak, lcmv_peak)
+dspm_stc_t = dspm_stc.copy().crop(TIME_POINT, TIME_POINT)
+lcmv_stc_t = lcmv_stc.copy().crop(TIME_POINT, TIME_POINT)
 
 png_dspm = os.path.join(OUT_DIR, "_tmp_jas_fig11_dspm.png")
 png_lcmv = os.path.join(OUT_DIR, "_tmp_jas_fig11_lcmv.png")
-dspm_clim = render(dspm_stc_t, f"dSPM @ {dspm_peak * 1000:.0f}ms", png_dspm)
-lcmv_clim = render(lcmv_stc_t, f"LCMV @ {lcmv_peak * 1000:.0f}ms", png_lcmv)
+dspm_clim = render(dspm_stc_t, png_dspm)
+lcmv_clim = render(lcmv_stc_t, png_lcmv)
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-for ax, png, label, t, clim in zip(
-        axes, [png_dspm, png_lcmv], ["dSPM", "LCMV"],
-        [dspm_peak, lcmv_peak], [dspm_clim, lcmv_clim]):
+for ax, png, label, clim in zip(axes, [png_dspm, png_lcmv], ["dSPM", "LCMV"],
+                                [dspm_clim, lcmv_clim]):
     ax.imshow(mpimg.imread(png))
     ax.axis("off")
-    ax.set_title(f"{label} (peak @ {t * 1000:.0f}ms)")
-    sm = plt.cm.ScalarMappable(cmap="hot", norm=plt.Normalize(vmin=clim[0], vmax=clim[1]))
+    ax.set_title(label)
+    cmap = transparent_hot(clim[0], clim[1])
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=clim[1]))
     fig.colorbar(sm, ax=ax, orientation="horizontal", fraction=0.046, pad=0.04)
-fig.suptitle("Group average, faces vs. scrambled contrast (ventral view)")
+fig.suptitle(f"Group average, faces vs. scrambled contrast (ventral view, t={TIME_POINT * 1000:.0f}ms)")
 fig.tight_layout()
 
 out_path = os.path.join(OUT_DIR, f"jas_fig11_group_source_highpass-{l_freq}Hz.pdf")

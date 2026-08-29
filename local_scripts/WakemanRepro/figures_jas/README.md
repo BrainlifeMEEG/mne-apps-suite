@@ -45,12 +45,22 @@ committed** — not ours to redistribute. If missing, refetch from
 ## Known gaps
 
 None currently open. All 12 figures built and verified against the
-published paper figures. One standing, documented (not "fixable")
-limitation: Figures 8/9's anterior/facial region is affected by this
-dataset's own MRI defacing (anonymization) — acknowledged by the paper's
-own Figure 9 caption too, not unique to this reproduction. See
-`../original_scripts/GLITCHES.md` for the full methodology writeup —
+published paper figures. Two standing, documented (not "fixable")
+limitations, neither unique to this reproduction:
+- Figures 8/9's anterior/facial region is affected by this dataset's own
+  MRI defacing (anonymization) — acknowledged by the paper's own Figure 9
+  caption too.
+- S04's automated coregistration has a somewhat larger residual rotation
+  (-16.7° pitch) than the other 15 subjects (single digits to low 20s) --
+  with only LPA/RPA reliably usable for fitting (see below), this was the
+  one subject where that wasn't quite enough for a tight fit.
+  `mne.make_forward_solution`'s own `on_inside='warn'` was needed to get
+  past 27/306 MEG sensors landing just inside the BEM surface for this
+  subject specifically; contributes to the 16-subject group average like
+  everyone else, just with a somewhat noisier per-subject estimate.
+
+See `../original_scripts/GLITCHES.md` for the full methodology writeup —
 notably its "Source-space onboarding", "Watershed BEM neck/defacing
-investigation", and "Figures 11/12: two more real bugs" sections — and
-`../figures/README.md` for why this directory exists separately from
-`../figures/`.
+investigation", "Figures 11/12: two more real bugs", and "Coregistration
+was systematically wrong dataset-wide" sections — and `../figures/README.md`
+for why this directory exists separately from `../figures/`.

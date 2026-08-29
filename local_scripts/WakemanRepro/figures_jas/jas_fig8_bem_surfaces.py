@@ -16,36 +16,34 @@ too, not a one-off shortcut for this figure alone.
 Subject: same "paper subject 4" = openfMRI sub004 = BIDS sub-03 crosswalk
 as Figure 10 (see that script's docstring for the full chain of evidence).
 
-Uses `mne.viz.plot_bem()` directly -- draws all 3 watershed BEM surfaces
-automatically from `subjects_dir/subject/bem/watershed/` through the MRI,
-exactly this figure's content.
+Layout matches the published figure exactly (checked directly against
+paper_figure8_reference.png, not assumed): 4 single-slice panels --
+1 axial, 2 coronal (at different depths), 1 sagittal -- not a multi-slice
+grid in one orientation. `mne.viz.plot_bem()` only draws one orientation
+per call, so each panel is rendered separately (`slices=[N]`, one slice)
+and composited into a single row, same pattern used for other multi-panel
+figures in this project (Figs 4/11). Slice indices were picked to match
+the published panels' approximate content (ventricle shape/depth), not
+derived from any ground-truth coordinate -- the paper gives no numeric
+slice positions.
 
-`orientation='axial'`, restricted to `slices=range(100, 220, 12)` (not the
-default coronal auto-slicing across the whole volume): confirmed via
-direct visual inspection (raw T1 slices, no BEM overlay) that ds000117's
-T1 volumes are defaced -- a sharp, artificial straight-edged cut through
-the anterior face/neck region, consistent with the dataset's own README
-("Defacing of MPRAGE T1 images was performed by the submitter") and
-independently corroborated by the *paper's own* Figure 9 caption: "the
-anonymization of the MRI produces a mismatch between digitized points and
-outer skin surface at the front of the head." That corrupted region makes
-watershed's surfaces genuinely unreliable there (confirmed empirically --
-swept preflood 5/15(default)/30/50 and tried gcaatlas=True, all
-visually identical in the affected region, ruling out a watershed-tunable
-segmentation bug -- see GLITCHES.md's "Watershed BEM neck/defacing
-investigation"). Axial slices in this range stay within the cranial vault,
-avoiding the neck entirely (a coronal or sagittal view can't avoid it --
-the neck sits directly below the head in every such slice) and only
-brushing the defaced region's edge in the lowest 1-2 slices, giving an
-honest, representative view of surfaces that separate cleanly everywhere
-that isn't corrupted by anonymization -- not a cosmetic crop hiding a
-real bug.
+Earlier draft restricted to axial, cranial-only slices specifically to
+avoid this dataset's defaced-MRI artifact in the neck/anterior region (see
+GLITCHES.md's "Watershed BEM neck/defacing investigation") -- reverted
+after review: the published figure's own coronal/sagittal panels show the
+*same* kind of artifact (a visible black missing-data wedge in both
+coronal panels, a disconnected fragment in the sagittal panel) -- the
+comparison is more honest and more useful showing the same slice types the
+paper shows, defacing artifacts included, than a cleaned-up view that
+dodges them.
 """
 import os
 import sys
 
 import matplotlib
 matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import mne
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -58,10 +56,34 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 SUBJECT = "sub004"  # paper "subject 4" -- see crosswalk note above
 
-fig = mne.viz.plot_bem(subject=SUBJECT, subjects_dir=subjects_dir,
-                       orientation="axial", slices=range(100, 220, 12), show=False)
+# (orientation, slice index) for each of the paper's 4 panels, left to right.
+PANELS = [
+    ("axial", 150),
+    ("coronal", 100),
+    ("coronal", 140),
+    ("sagittal", 128),
+]
+
+panel_pngs = []
+for i, (orientation, slice_idx) in enumerate(PANELS):
+    fig = mne.viz.plot_bem(subject=SUBJECT, subjects_dir=subjects_dir,
+                           orientation=orientation, slices=[slice_idx], show=False)
+    png_path = os.path.join(OUT_DIR, f"_tmp_jas_fig8_panel_{i}.png")
+    fig.savefig(png_path, dpi=150)
+    plt.close(fig)
+    panel_pngs.append(png_path)
+    print(f"[jas_fig8] rendered {orientation} slice {slice_idx}")
+
+fig, axes = plt.subplots(1, len(panel_pngs), figsize=(4 * len(panel_pngs), 4.2))
+for ax, png in zip(axes, panel_pngs):
+    ax.imshow(mpimg.imread(png))
+    ax.axis("off")
 fig.suptitle(f"{SUBJECT} (paper subject 4): watershed BEM surfaces on T1")
+fig.tight_layout()
 
 out_path = os.path.join(OUT_DIR, f"jas_fig8_bem_surfaces_{SUBJECT}.pdf")
 fig.savefig(out_path)
+plt.close(fig)
+for p in panel_pngs:
+    os.remove(p)
 print(f"[jas_fig8] saved {out_path}")

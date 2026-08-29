@@ -522,6 +522,52 @@ result against the paper rather than treating "no exception" as "correct":
     colormap MNE would have used internally, extracted via `mne.viz._3d._process_clim()` rather
     than approximated with a similar-looking matplotlib colormap.
 
+## Coregistration was systematically wrong dataset-wide, not just Figure 9's rendering (2026-08-29)
+
+User flagged Figure 9's helmet as visibly tilted "perhaps 30-45 degrees" -- checked numerically
+rather than just re-rendering with a different camera: computed Euler angles directly from the
+written trans matrix. **Confirmed: 38.7 degree pitch on S09**, matching the visual estimate closely.
+This was a real coregistration bug, not a rendering/camera issue (the earlier "camera framing" fix
+from the prior review round was real too, but insufficient -- it fixed how a *correct* fit would
+have displayed, not the fact that the fit itself was wrong).
+
+Root cause investigation (each step verified empirically, not assumed):
+- Confirmed dataset-wide (not S09-specific): every subject's "extra" head-shape digitization points
+  sit *entirely* in the anterior/facial region (head-frame Y >= ~0.05m, checked on 4 subjects,
+  zero posterior/lateral coverage at all) -- squarely the region already known to be corrupted by
+  this dataset's MRI defacing (see "Watershed BEM neck/defacing investigation" above).
+- Confirmed ICP's bad fit isn't an initialization problem: ran it from both the fiducial-based
+  initial guess and from identity: both converged to a similarly large (~40-48 degree) pitch --
+  a genuine bad local optimum given the only available head-shape points sit on a distorted part
+  of the scalp mesh, not a starting-point sensitivity issue.
+- Confirmed the nasion fiducial has the same problem one level up: with `nasion_weight` at any
+  nonzero value (10, 1, 0.1, 0.01 all tested), `fit_fiducials()` alone already gives ~23 degrees of
+  pitch; at exactly `nasion_weight=0` it drops to ~0 -- a clean on/off effect pointing at the
+  nasion constraint itself, not a weighting-balance issue to tune.
+- **Fix, round 1**: exclude nasion and all head-shape points from fitting entirely, rely only on
+  LPA/RPA (near the ears, untouched by facial defacing). Brought S09 down to a few degrees on every
+  axis. Applied to all 16 subjects.
+- **Second bug, found running round 1 across all 16 subjects**: 7 of 16 (S03/S04/S07/S12/S15/
+  S17/S19) came out with ~156-176 degree pitch -- essentially upside-down. Root cause: LPA+RPA
+  alone are only 2 points, under-determining a rigid transform -- roll around the LPA-RPA axis
+  itself is left completely unconstrained (a 180-degree roll leaves both points exactly fixed,
+  since they sit ON that axis by construction of the head coordinate system). The optimizer landed
+  on one of two equally-LPA/RPA-valid solutions per subject, essentially at random.
+- **Fix, round 2**: after the LPA/RPA-only ICP fit, transform the *digitized* (head-frame) nasion
+  through the fitted trans into MRI space and check its sign -- FreeSurfer's surface-RAS convention
+  fixes Y+ as anterior, a geometric fact independent of any subject-specific fiducial estimate,
+  unlike the *position* of the nasion (which defacing does affect). If the transformed nasion lands
+  posterior, apply a 180-degree rotation around the fitted LPA-RPA axis to correct it -- confirmed
+  this only flips the ambiguous roll DOF and leaves LPA/RPA exactly where ICP put them. This uses
+  the nasion only as a binary direction check, not a metric position constraint -- confirmed on the
+  two worst subjects (S03: 166.0 -> -14.0 degrees pitch, S04: 163.3 -> -16.7 degrees), both now
+  within physically-normal range for a seated recording.
+- Full 16-subject re-run (anatomy/BEM unaffected, untouched; coreg -> forward -> dSPM inverse ->
+  LCMV -> group averages all redone) after both fixes landed together, not fixed once and shipped
+  without the second check -- the array's own per-subject rotation-angle log (added as part of this
+  fix, printed for every subject going forward) is the way to catch a third such issue early if one
+  exists, rather than relying on spotting it visually in a rendered figure again.
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes

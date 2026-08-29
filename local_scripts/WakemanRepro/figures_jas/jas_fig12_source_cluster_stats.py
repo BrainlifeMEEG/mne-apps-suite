@@ -18,7 +18,12 @@ Adapted from original_scripts/results/statistics/plot_source_stats.py
   - Reads per-subject morphed faces_eq/scrambled_eq dSPM stcs from
     cluster/run_group_source_average.py's output (all 16 subjects) instead
     of a bespoke read loop -- same files the original script itself reads,
-    just produced by this project's own adapted pipeline script.
+    just produced by this project's own adapted pipeline script. Rebuilt
+    after cluster/run_subject_coreg.py's coregistration fix (nasion +
+    head-shape points were pulling every subject's fit into an unphysical
+    rotation, see that script's docstring) -- the underlying per-subject
+    dSPM stcs changed, so this cluster test needed rerunning from scratch,
+    not just a rendering fix.
   - output path points at figures_jas/ instead of a relative '../figures/'.
 
 Heaviest step in this project's whole source-space chain: permutation
@@ -104,8 +109,14 @@ T_obs, clusters, cluster_p_values, H0 = clu = spatio_temporal_cluster_1samp_test
     step_down_p=0.05, verbose=True)
 
 good_cluster_inds = np.where(cluster_p_values < 0.05)[0]
+n_lh_vert = len(fsaverage_vertices[0])
 for ind in good_cluster_inds:
-    print(f"[jas_fig12] found cluster p={cluster_p_values[ind]:g}")
+    time_inds, space_inds = np.squeeze(clusters[ind])
+    verts = np.unique(space_inds)
+    n_lh = int((verts < n_lh_vert).sum())
+    n_rh = int((verts >= n_lh_vert).sum())
+    print(f"[jas_fig12] found cluster p={cluster_p_values[ind]:g}  "
+        f"n_vertices={len(verts)} (LH={n_lh}, RH={n_rh})")
 if len(good_cluster_inds) == 0:
     print("[jas_fig12] WARNING: no significant clusters found (p < 0.05).")
 
@@ -131,22 +142,22 @@ stc_all_cluster_vis = summarize_clusters_stc(
     clu, tstep=tstep * 1000, vertices=fsaverage_vertices, subject="fsaverage")
 pos_lims = [0, 0.1, 100 if l_freq is None else 30]
 # colorbar=False, time_label=None (rendered separately below via matplotlib,
-# not pyvista): hemi='both'+views='ventral' renders RH on the LEFT of the
-# image (verified directly: a test stc with data on RH-only vertices
-# renders on the image's left side) -- the paper's own caption is explicit
-# about its convention ("Right hemisphere is on the right side"), the
-# opposite of what this renders by default, so the render needs mirroring.
-# A first attempt cropped-and-flipped just the "brain region" using a fixed
-# pixel-row boundary, leaving pyvista's own embedded colorbar/text
-# unflipped -- fragile in practice: the real content's extent varies enough
-# between renders that a fixed fraction either clipped real content or left
-# text partially flipped (both happened, on different attempts, see
-# Figure 11's identical fix for the same reasoning). Cleaner fix: never let
-# pyvista draw a colorbar/label into the same raster -- flip the whole
-# (now label-free) image safely, draw a matching matplotlib colorbar
-# afterward using the exact colormap MNE would have used (extracted via its
-# own internal `_process_clim`, not a matplotlib lookalike) and the same
-# pos_lims values.
+# not pyvista): hemi='both'+views='ventral' renders anterior at the TOP and
+# right hemisphere on the LEFT of the image by default -- confirmed
+# directly (not assumed) with two synthetic test stcs (RH-only vertices;
+# anterior-only LH vertices), each rendered and visually inspected. The
+# published figure has anterior at the BOTTOM, right hemisphere on the
+# right -- fixed with a 180-degree image rotation (flips both axes at
+# once). A first attempt only flipped left-right, leaving anterior at the
+# top (missed until reviewed against the published figure directly) and
+# cropped-and-flipped just the "brain region" by a fixed pixel-row
+# boundary rather than rotating the whole (colorbar-free) image -- fragile
+# in practice, see GLITCHES.md's "Figures 11/12: two more real bugs".
+# Cleaner fix: never let pyvista draw a colorbar/label into the same raster
+# -- rotate the whole (now label-free) image safely, draw a matching
+# matplotlib colorbar afterward using the exact colormap MNE would have
+# used (extracted via its own internal `_process_clim`, not a matplotlib
+# lookalike) and the same pos_lims values.
 brain = stc_all_cluster_vis.plot(
     hemi="both", subjects_dir=subjects_dir,
     time_label=None, views="ventral",
@@ -164,7 +175,7 @@ brain.save_image(out_path)
 brain.close()
 
 from PIL import Image
-Image.open(out_path).transpose(Image.FLIP_LEFT_RIGHT).save(out_path)
+Image.open(out_path).transpose(Image.ROTATE_180).save(out_path)
 
 from mne.viz._3d import _process_clim
 cmap = _process_clim(dict(pos_lims=pos_lims, kind="value"), "auto", True)["colormap"]
