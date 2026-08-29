@@ -54,14 +54,16 @@ PAGES = [
     dict(n=8, title="BEM surfaces (subject 4)",
          paper="paper_figure8_reference.png",
          ours=["jas_fig8_bem_surfaces_sub004.pdf"],
-         note="Watershed BEM on plain T1, not FLASH-derived (no FLASH MRI in this "
-              "dataset release) -- same 3 surfaces, different extraction method."),
+         note="Real FLASH BEM (convert_flash_mris/make_flash_bem, the paper's own method) "
+              "rendered on plain T1.mgz rather than the noisy synthesized flash5_reg.mgz "
+              "-- see GLITCHES.md's \"FLASH MRI was never actually absent\" section."),
     dict(n=9, title="Coregistration (our S09)",
          paper="paper_figure9_reference.png",
          ours=["jas_fig9_coregistration_sub010.png"],
          note="Trans file from this project's own automated ICP coregistration "
               "(mne.coreg.Coregistration) -- no pre-existing trans ships with this "
-              "dataset release. Fit quality logged at coreg time, see GLITCHES.md."),
+              "dataset release. Fit quality logged at coreg time, see GLITCHES.md. "
+              "Head/inner-skull surfaces are the same real FLASH BEM used for Figure 8."),
     dict(n=10, title="Whitened MEG data + GFP (subject 4)",
          paper="paper_figure10_reference.png",
          ours=["jas_fig10_whitened_gfp_sub004.pdf"],
