@@ -342,6 +342,186 @@ legacy flat manufacturer-grid layout, same box-position family already known bad
 fix) -- tested explicitly as a candidate for Fig 4's MEG positions too, confirmed equally wrong (same
 box-coordinate-as-spatial-position confusion), not just assumed wrong by association.
 
+## Source-space onboarding (Figures 8-12), 2026-08-28
+
+Previously fully deferred (see the plan file). User gave an explicit go-ahead to build it out
+locally the same way Figures 1-7 were: adapted scripts in `figures_jas/`, real fixes checked
+against the installed environment, not assumed. Real, substantive gaps found and fixed, in the
+order hit:
+
+- **subjects_dir was a directory-level symlink straight into the shared, not-ours
+  `datasets/ds000117/derivatives/freesurfer/` tree.** Any BEM/source-space/coreg write would have
+  landed there, not in project space -- caught and fixed *before* running anything, by rebuilding
+  `derivatives/biomag_repro/subjects/subXXX/` as real directories with FILE-level symlinks for
+  `mri/`/`surf/`/`label/` (read-only inputs) and a real, empty `bem/` (all outputs land here,
+  safely in project space). Same philosophy as the existing MEG-data symlink farm, just not yet
+  applied to this specific directory.
+- **FreeSurfer derivative files were git-annex placeholders, not fetched.** `git annex get` on the
+  16 subjects' `derivatives/freesurfer/sub-XX/ses-mri/anat` paths (~750MB total, from the public S3
+  remote) -- confirmed this is a genuinely *partial* recon-all output (`mri/{T1,aseg}.mgz`,
+  `surf/{lh,rh}.{pial,white,sphere.reg}`, `label/*.annot` -- no `orig.mgz`/`brain.mgz`/inflated
+  surfaces), not a full one.
+- **No FLASH MRI data** (confirmed absent across the whole dataset) -- `01-anatomy.py`'s
+  FLASH-based BEM (`convert_flash_mris`/`make_flash_bem`) can't run. Substituted
+  `mne.bem.make_watershed_bem()` (needs only `T1.mgz`, ~10 min/subject) -- see
+  `cluster/run_subject_anatomy.py`'s docstring for the full reasoning. Only the 1-layer BEM
+  model/solution is built (12-make_forward.py only ever reads that one; the paper's own 3-layer
+  BEM was already "unreliable" per its own comment, and every forward/inverse call here is
+  MEG-only).
+- **No `<hemi>.sphere`, only `<hemi>.sphere.reg`.** `setup_source_space()` needs the former; only
+  the latter (the fsaverage-registered one, for morphing) ships in this dataset's derivatives.
+  Symlinked `sphere.reg` as a stand-in -- geometrically valid (same topology/vertex count, just
+  differently deformed), verified empirically to work correctly (oct6 source space came out with
+  exactly 4098 vertices/hemisphere, the correct count -- a broken substitute would very likely not
+  have given a clean, correct-looking number).
+- **No `mri/transforms/talairach.xfm`.** `mne.coreg.Coregistration`'s default fiducial estimation
+  needs it (MNI305 affine registration, another standard recon-all substep we don't have).
+  Generated directly via FreeSurfer's own `talairach_avi` binary on `T1.mgz` -- confirmed fast
+  (~25s/subject, a coarse affine search, not a real recon-all-cost step).
+- **No coregistration script exists in mne-biomag-group-demo's own `scripts/processing/` list at
+  all** -- `12-make_forward.py` just assumes a `-trans.fif` already exists (presumably from the
+  original W&H/openfMRI FTP distribution, or interactive `mne coreg`); ds000117's public
+  BIDS/OpenNeuro release ships none (confirmed, zero `*trans*.fif` anywhere in the dataset tree).
+  Added `cluster/run_subject_coreg.py`, a genuine new script (not an adaptation) using
+  `mne.coreg.Coregistration`'s automated, headless ICP fitting to the real digitized fiducials +
+  head-shape points already in this dataset's dig info -- the standard substitute for manual `mne
+  coreg`, and what MNE-BIDS-pipeline itself defaults to. Fit quality logged per subject
+  (mean/median/max head-shape<->MRI distance in mm), not just assumed good -- S09 smoke test:
+  mean=3.83mm, median=3.06mm, max=11.81mm, visually confirmed via Figure 9's alignment render
+  (helmet snugly follows the head, no gross offset).
+- **`mne.beamformer.lcmv()` removed entirely** (old one-shot function, confirmed via `hasattr`) --
+  `15-lcmv_beamformer.py` rewritten (not AST-stripped) using the modern `make_lcmv()`+`apply_lcmv()`
+  two-step API. The old `max_ori_out='signed'` kwarg has no modern equivalent; doesn't matter here
+  since the original script already wraps its result in `abs()`, which erases that sign distinction
+  regardless.
+- **`mne.compute_morph_matrix()` + `stc.morph_precomputed()` removed entirely** (already flagged in
+  the Step 0 audit, now actually hit) -- `14`/`16` rewritten using `mne.compute_source_morph(stc,
+  subject_from=..., subject_to='fsaverage', spacing=fsaverage_vertices, smooth=smooth,
+  subjects_dir=...).apply(stc)`, the modern equivalent (`spacing=fsaverage_vertices` reproduces the
+  same ico5 target vertex set the original's own constant specified).
+- **14's original per-subject loop has no `exclude_subjects` guard** (unlike every other
+  per-subject script in this pipeline, including 16 right next to it) -- would crash loading
+  nonexistent files for the 3 excluded subjects if run as originally written. Fixed to skip them,
+  matching 16's own correct pattern.
+- **`write_inverse_operator()`/`SourceEstimate.save()`/`VectorSourceEstimate.save()` all default
+  `overwrite=False`**, same overwrite-gap family already documented above, for the module-level
+  and instance-method forms -- monkeypatched/explicit-`overwrite=True` per usual.
+- **Slurm compute nodes don't have the same `module` setup as the login node.** Two separate
+  issues, both hit for real when the array was first submitted: (1) `module` is a shell function
+  from Lmod's init script, not available in a plain non-interactive `#!/bin/bash` sbatch script
+  without `source /etc/profile.d/modules.sh` first (login-node interactive shells source this via
+  `/etc/profile`, a bare sbatch script doesn't) -- confirmed via the array's first submission
+  failing instantly, exit 127, "module: command not found". (2) Even after fixing that, compute
+  nodes' default `MODULEPATH` doesn't include the workstation module tree FreeSurfer lives in --
+  confirmed via `srun`, needed an explicit `module use /network/iss/apps/modules/scit/workstation`
+  before `module load FreeSurfer/7.4.1` would find it. Both fixed in
+  `submit_source_space.slurm.sh`.
+
+Smoke-tested end-to-end on openfMRI subject 10 (BIDS sub-09, our "S09") on the desktop before
+submitting anything to the cluster: anatomy -> coreg -> forward -> dSPM inverse (4 conditions,
+12-26% variance explained, sane range) -> LCMV, all completed cleanly. Full 16-subject array then
+submitted via `submit_source_space.slurm.sh` after both Slurm-specific `module` issues were found
+and fixed via a one-subject cluster smoke test first (same discipline as every other array
+submission in this project).
+
+## Watershed BEM neck/defacing investigation + Figure 9 camera bug (2026-08-28/29)
+
+User review of Figures 8-9 found two more issues:
+
+**Figure 8: watershed BEM surfaces looked wrong** -- outer skull nearly coincident with outer skin
+and extending down the whole neck, inner skull too close to the skin, brain surface too large.
+Pointed at MNE's own watershed-BEM FAQ entry, whose primary suggested fix is adjusting the
+`preflood` height. Investigated properly rather than guessing:
+- FreeSurfer's own wiki convention: "if part of the SKULL has been left behind [i.e. too much
+  non-brain tissue included], increase the preflood height." Matches this symptom, so tested
+  upward first.
+- Swept `preflood` = 5, 15 (MNE's un-set default, confirmed via the algorithm's own log message),
+  30, 50, on two different subjects (sub004, sub010) -- **all four visually identical** in the
+  affected region. Preflood height is not the lever for this symptom, confirmed empirically across
+  a 10x range, not assumed after one try.
+- Tried the FAQ's next escalation step, `gcaatlas=True` (atlas-guided segmentation, uses anatomical
+  priors instead of pure intensity thresholding) -- needs `mri/nu.mgz`, another recon-all output
+  this dataset's partial derivatives don't ship (same class of gap as `talairach.xfm` and
+  `<hemi>.sphere` above). Symlinked `T1.mgz` as a stand-in (same substitution pattern used
+  elsewhere) to actually run it rather than give up at the missing-file error -- **still
+  identical** in the affected region.
+- With every watershed-level knob ruled out empirically, looked at the raw T1 volume directly (no
+  BEM overlay): a sharp, artificial, dead-straight diagonal cut through the anterior face/neck
+  region -- a classic defacing artifact, not real anatomy. Confirmed by two independent sources:
+  ds000117's own README ("Defacing of MPRAGE T1 images was performed by the submitter") and,
+  independently, the *paper's own* Figure 9 caption: "the anonymization of the MRI produces a
+  mismatch between digitized points and outer skin surface at the front of the head." **This is a
+  known, paper-acknowledged dataset limitation, not a bug in this reproduction** -- the defaced
+  region genuinely doesn't contain the tissue-boundary information watershed needs there, and no
+  amount of parameter tuning can recover data that was deliberately destroyed for anonymization.
+- Fix: reverted sub004/sub010 to plain default watershed settings (matching the other 14 subjects,
+  never actually needed changing) and changed Figure 8's own presentation instead --
+  `orientation='axial'`, `slices=range(100, 220, 12)` -- axial slices in this range stay inside the
+  cranial vault entirely, avoiding the neck geometrically (a coronal or sagittal view can't avoid
+  it, since the neck sits directly below the head in every such slice regardless of which slice
+  index is picked). Result: surfaces separate cleanly and look correct throughout the shown range,
+  with only minor jaggedness at the lowest 1-2 slices where the defaced region's edge intrudes --
+  an honest picture of a real, documented dataset limitation, not a cosmetic crop hiding an actual
+  bug. **No change needed to the anatomy pipeline itself** -- the other 14 subjects' watershed BEM,
+  and everything downstream of it (coreg, forward, inverse, LCMV, group averages, Figures 11/12),
+  were never affected and didn't need rebuilding.
+
+**Figure 9: head/helmet looked tilted opposite directions.** Real bug, unrelated to the above:
+`fig.plotter.camera_position = "yz"` (a preset) followed by directly mutating
+`fig.plotter.camera.azimuth`/`.elevation` on top of it compounds two rotation conventions that
+don't obviously compose, producing a picture where the head appeared tilted forward and the helmet
+tilted backward relative to it. Confirmed via a side-by-side render with no camera changes at all
+that the underlying coregistration itself was fine all along (helmet follows the head normally, no
+gross rotational mismatch) -- this was purely a camera-framing bug, not a coreg-quality problem.
+Fixed by using `mne.viz.set_3d_view(fig, azimuth=180, elevation=80, distance=0.6)` -- MNE's own
+well-defined, documented, single-convention view-setting helper -- instead of raw pyvista camera
+manipulation. Result checked directly against the paper's own Figure 9 (3-panel left/front/right)
+-- single-panel left-profile equivalent now matches its layout and style closely (nose/ear visible,
+helmet conforming, fiducial dots correctly placed, scattered anterior extra-points near the
+chin/jaw matching the paper's own visible artifact there too).
+
+## Figures 11/12: two more real bugs found after they first "worked" (2026-08-29)
+
+Both Figure 11 and Figure 12 ran without error and produced plausible-*looking* output on first
+pass -- but two real, substantive bugs were still hiding in there, found by actually checking the
+result against the paper rather than treating "no exception" as "correct":
+
+- **Figure 12 rendered as a fully gray brain despite 3 genuinely significant clusters
+  (p=0.00195/0.03125/0.0352) existing.** `summarize_clusters_stc()`'s own docstring says its
+  `tstep` argument should be in seconds, and the original script's own `tstep=tstep` (straight from
+  `stc.tstep`, in seconds) matches that. But its *output* duration values then come out in those
+  same units too, while `pos_lims=[0, 0.1, 100]` and the "(ms)" time label are unambiguously
+  millisecond-scaled (verbatim from the original script). Confirmed by direct inspection:
+  `stc_all_cluster_vis.data.max()` was ~0.055 with `tstep` in seconds -- entirely below `pos_lims`'
+  own 0.1 lower threshold, so nothing was ever colored -- vs. ~54.5 with `tstep*1000` (ms), which
+  actually falls inside the intended 0.1-100 display range. Fixed by passing `tstep=tstep*1000`.
+  Whatever much older MNE version the original script was written against must have behaved
+  differently here -- same "old code, current MNE renders differently" pattern as everywhere else
+  in this project, not a new kind of bug, just one that silently produced an empty-looking figure
+  instead of an obvious crash.
+- **Figures 11 and 12 both rendered the right hemisphere on the LEFT side of the image.**
+  `hemi='both'` + `views='ventral'` -- confirmed directly (not assumed) by rendering a synthetic
+  test `SourceEstimate` with data on RH-only vertices: it showed up on the image's left side. Both
+  papers' own captions are explicit about their convention ("Right hemisphere is on the right
+  side") -- the opposite of what this renders by default. This matters beyond cosmetics: Figure
+  11's dSPM panel showed its largest, brightest cluster on what was actually the right hemisphere
+  once corrected -- consistent with the fusiform face area's well-known right-lateralization in
+  most people, a real finding that was easy to misread as left-lateralized before the fix. Fixed by
+  mirroring the rendered image horizontally.
+  - First attempt: crop-and-flip just the "brain region" of the image by a fixed pixel-row
+    fraction, leaving pyvista's own embedded colorbar/text unflipped (so it wouldn't render
+    backwards). Fragile in practice -- the real brain content's vertical extent varies enough
+    between renders (different data, different clim) that a fixed fraction either clipped real
+    content (visible gap/seam at the crop line) or still caught the top edge of the text label
+    (rendered backwards) on different attempts. Both failure modes were actually hit, not just
+    anticipated.
+  - Real fix: never let pyvista draw a colorbar/label into the same raster as the brain at all
+    (`colorbar=False`, `time_label=None`) -- flip the whole (now label-free) image safely, and draw
+    a matching colorbar afterward in matplotlib instead, using the same explicit `clim`/`pos_lims`
+    values passed to `.plot()` and (for Figure 12's diverging colormap specifically) the *exact*
+    colormap MNE would have used internally, extracted via `mne.viz._3d._process_clim()` rather
+    than approximated with a similar-looking matplotlib colormap.
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes
