@@ -633,21 +633,59 @@ the same near-coincident outer_skull/outer_skin problem the original "Watershed 
 investigation" section already ruled out fixing via preflood height, hence not the chosen path here
 either).
 
-**Figure 8's panel layout, resolved empirically, not by eye a second time**: the previous
-axial+coronal+coronal+"sagittal" layout was wrong (confirmed against the reference), but the user's
-correction ("4 coronal, posterior to anterior") also didn't match what panel 1 looked like by eye
-(round, no neck/jaw visible -- axial-looking). Rather than re-litigate this visually, built
-`figures_jas/jas_fig8_slice_search.py` / `jas_fig8_slice_search_watershed.py`: sweep ~75 coronal
-slice indices, render each (BEM contours on, index/orientation labels off, cropped tight to
-content), z-score normalize against each of the 4 reference panels (also cropped + normalized), and
-score with mean squared difference. Every panel's score curve came out with a single, clean
-interior minimum (not a boundary artifact of the sweep range) -- both against the (noisy)
-FLASH/flash5_reg render and, better, against the (clean) watershed/T1.mgz render, the one actually
-used for the final indices: **slices=[54, 87, 114, 141]**. Anatomical explanation for panel 1's
-axial-looking match: slice 54 sits far enough posterior that the coronal plane simply doesn't
-intersect the neck -- the same underlying geometric reason an axial slice near the vertex also
-misses it. Both search scripts and their diagnostic PNGs (`jas_fig8_slice_search*.png`) are kept as
-permanent, re-runnable evidence, not deleted after use.
+## Figure 8 slice matching: four attempts (2026-08-29)
+
+The previous axial+coronal+coronal+"sagittal" panel layout was wrong (confirmed against the
+reference), but the user's correction ("4 coronal, posterior to anterior") also didn't match what
+panel 1 looked like by eye (round, no neck/jaw visible -- axial-looking). Found the right slice
+indices for all 4 panels the hard way -- three numeric proxies tried and rejected before landing on
+direct visual comparison:
+
+1. **Whole-panel grayscale SSD** (`jas_fig8_slice_search.py` / `_watershed.py`): sweep ~75 coronal
+   slice indices, render each (contours on, labels off, cropped tight to content), z-score
+   normalize against each of the 4 reference panels, score by mean squared difference. Every
+   panel's score curve had a single clean interior minimum (not a sweep-boundary artifact) --
+   looked convincing, picked slices=[54, 87, 114, 141]. **Wrong**: rendering the final figure at
+   full resolution (not the small normalized thumbnail used for scoring) showed slice 54 clearly
+   has a neck in view, unlike the reference's neck-free panel 1 -- the metric is dominated by the
+   large, high-contrast gyral/skull texture and barely weights the thin neck sliver at the bottom
+   of frame, so it can't reliably tell "neck visible" from "not," the one thing that actually
+   needed telling apart here.
+2. **Binary silhouette + Dice overlap** (`jas_fig8_slice_search_shape.py`): threshold to
+   tissue-vs-background, keep the largest connected component, crop to its bounding box, resize to
+   a common shape, score by Dice coefficient -- meant to fix exactly the texture-domination problem
+   above by comparing outline shape instead of pixel content. **Wrong differently**: user caught it
+   directly ("the images aren't aligned") -- crop-then-resize-to-a-common-square throws away real
+   relative head-size information (a small, near-vertex slice's silhouette gets blown up to fill
+   the same frame as a much bigger mid-head slice), so shape alone isn't comparable across slices
+   without also preserving scale. Best achievable Dice was only ~0.5-0.75, and panel 4 picked a
+   slice that wasn't even a single connected head shape.
+3. **Aspect ratio + SSD, rank-combined** (`jas_fig8_slice_search_combined.py`): kept the largest
+   connected component's bounding-box aspect ratio (height/width, computed before any resize, so
+   scale-preserving) as the primary signal, SSD within that box as a tiebreaker, combined by rank
+   sum. **Still wrong** for the two hardest panels: picked slices 18 and 15 for panels 1 and 4 --
+   both right at the edge of the swept index range, both tiny degenerate rings floating in mostly-
+   empty frames (a stray-pixel/connected-component robustness failure at the sweep's extremes, not
+   a real match). Panels 2/3 (99, 90) were fine -- the two easy panels stayed easy throughout.
+4. **Direct visual comparison, then a targeted quantitative sanity check**
+   (`jas_fig8_slice_contact_sheet.py`): rendered every candidate slice at MNE's own native,
+   undistorted scale (no per-slice crop/resize at all) in a labeled contact sheet, and picked
+   matches by looking at them next to the reference panels -- same as picking a channel or time
+   window would be, not a metric-design problem. Landed on **slices=[39, 87, 99, 150]**. Panel 1
+   (the specific "closed round shape, no neck" question that broke every automated attempt) was
+   then sanity-checked quantitatively anyway: largest-connected-component bounding box as width/
+   height fractions of frame size came out (0.453, 0.545) for slice 39 vs. (0.471, 0.562) for the
+   reference panel -- within 2% on both axes, both genuinely neck-free. Panels 2/3 were confirmed
+   against specific anatomical landmarks (panel 2: deep bilateral scalloping + visible lateral
+   ventricles; panel 3: ventricles gone, single central notch, defacing just starting -- both
+   directly visible in side-by-side crops). Panel 4 matches the reference's general character
+   (temporal-lobe double-bump, similar black-wedge extent, a disconnected outer-skin fragment
+   below) but not its exact fragment shape (a crossed figure-8 vs. the reference's single clean
+   oval) -- tried neighboring slices, none did better; treated as an idiosyncrasy of this dataset's
+   own defacing pattern rather than something to keep chasing.
+
+All four search scripts and their diagnostic PNGs are kept as permanent, re-runnable evidence of
+what was tried and why each one failed -- not deleted after being superseded.
 
 ## Other things noticed, not severity-ranked
 
