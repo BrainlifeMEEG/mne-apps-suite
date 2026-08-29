@@ -13,8 +13,8 @@ Group Study With the MNE Software", Frontiers in Neuroscience,
 | 5 | `jas_fig5_grand_average.py` (panel A) + `cluster/build_fig5_panel_b.py` (panel B) | `jas_fig5_grand_average_highpass-{NoneHz,1Hz}.pdf` |
 | 6A/B | `jas_fig6a_sensor_cluster_stats.py`, `jas_fig6b_decoding.py` | matching `.pdf`/`.png` |
 | 7 | `jas_fig7_spatiotemporal_cluster.py` | `jas_fig7_spatiotemporal_cluster_highpass-NoneHz-00.pdf` |
-| 8 | `jas_fig8_bem_surfaces.py` (needs `cluster/run_subject_anatomy.py`) | `jas_fig8_bem_surfaces_sub004.pdf` |
-| 9 | `jas_fig9_coregistration.py` (needs `cluster/run_subject_{anatomy,coreg}.py`) | `jas_fig9_coregistration_sub010.png` |
+| 8 | `jas_fig8_bem_surfaces.py` (needs `cluster/run_subject_{anatomy,flash_bem}.py`) | `jas_fig8_bem_surfaces_sub004.pdf` |
+| 9 | `jas_fig9_coregistration.py` (needs `cluster/run_subject_{anatomy,flash_bem,coreg}.py`) | `jas_fig9_coregistration_sub010.png` |
 | 10 | `jas_fig10_whitened_gfp.py` (needs only cov+evoked, no source-space dependency) | `jas_fig10_whitened_gfp_sub004.pdf` |
 | 11 | `jas_fig11_group_source.py` (needs `cluster/run_group_source_average.py`, all 16 subjects) | `jas_fig11_group_source_highpass-NoneHz.pdf` |
 | 12 | `jas_fig12_source_cluster_stats.py` (needs `cluster/run_group_source_average.py`, all 16 subjects) | `jas_fig12_source_cluster_stats_highpass-NoneHz.png` |
@@ -27,8 +27,12 @@ Group Study With the MNE Software", Frontiers in Neuroscience,
 then `cluster/setup_fsaverage.py` (once) + `cluster/run_group_source_average.py`
 (once, after all 16 subjects) before Figures 11/12. None of this is a
 literal rerun of `original_scripts/01,12-16` — real gaps in what this
-dataset's public release ships (no FLASH MRI, no full recon-all, no
-pre-existing coregistration) forced substitutions, all in
+project's derivatives (partial recon-all, no pre-existing coregistration)
+forced substitutions for the 16-subject group pipeline specifically
+(watershed BEM instead of FLASH, still used there — see "Known gaps"
+below for why that's fine, and GLITCHES.md's "FLASH MRI was never
+actually absent" section for why FLASH itself turned out not to be
+missing from the dataset, just unfetched), all written up in
 `../original_scripts/GLITCHES.md`'s "Source-space onboarding" section.
 
 `build_comparison_pdf.py` → `jas_figures_comparison.pdf`: side-by-side,
@@ -45,8 +49,21 @@ committed** — not ours to redistribute. If missing, refetch from
 ## Known gaps
 
 None currently open. All 12 figures built and verified against the
-published paper figures. Two standing, documented (not "fixable")
-limitations, neither unique to this reproduction:
+published paper figures. Figure 8 (sub004) and Figure 9's head/skull
+surface (sub010) now use **real FLASH-based BEM**
+(`cluster/run_subject_flash_bem.py`), the paper's own literal method — not
+the watershed substitute this project used earlier on the mistaken belief
+that FLASH MRI wasn't part of this ds000117 release (it is; see
+GLITCHES.md's "FLASH MRI was never actually absent" section). Rendered on
+plain `T1.mgz`, not the FLASH-derived `flash5_reg.mgz` — a real,
+unresolved `mri_ms_fitparms` flip-angle issue makes that background image
+noisy; the FLASH *surfaces* are unaffected (registered onto T1.mgz's own
+grid) so this hybrid gets the paper's real surfaces with clean contrast.
+This doesn't touch the 16-subject group pipeline (still watershed-based,
+BEM-anatomy correctness there was never in question — only these two
+subjects' figure-illustration quality was).
+
+Three standing, documented (not "fixable" this session) limitations:
 - Figures 8/9's anterior/facial region is affected by this dataset's own
   MRI defacing (anonymization) — acknowledged by the paper's own Figure 9
   caption too.
@@ -58,9 +75,18 @@ limitations, neither unique to this reproduction:
   past 27/306 MEG sensors landing just inside the BEM surface for this
   subject specifically; contributes to the 16-subject group average like
   everyone else, just with a somewhat noisier per-subject estimate.
+- `mri_ms_fitparms` (FreeSurfer, called via `mne.bem.convert_flash_mris`)
+  logs "non-equal flip_angle found ... Flip_angle is set to zero" when
+  combining this dataset's 5deg/30deg multi-echo FLASH acquisitions, even
+  with correct TR/TE/flip-angle headers on every input volume -- the
+  synthesized `flash5.mgz`/`flash5_reg.mgz` looks visibly noisy as a
+  background image (BEM surface extraction from it still works fine).
+  Not root-caused; worked around by rendering the resulting surfaces on
+  `T1.mgz` instead (see above), not by fixing the synthesis itself.
 
 See `../original_scripts/GLITCHES.md` for the full methodology writeup —
 notably its "Source-space onboarding", "Watershed BEM neck/defacing
-investigation", "Figures 11/12: two more real bugs", and "Coregistration
-was systematically wrong dataset-wide" sections — and `../figures/README.md`
-for why this directory exists separately from `../figures/`.
+investigation", "Figures 11/12: two more real bugs", "Coregistration was
+systematically wrong dataset-wide", and "FLASH MRI was never actually
+absent" sections — and `../figures/README.md` for why this directory
+exists separately from `../figures/`.

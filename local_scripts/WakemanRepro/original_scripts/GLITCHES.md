@@ -568,6 +568,87 @@ Root cause investigation (each step verified empirically, not assumed):
   fix, printed for every subject going forward) is the way to catch a third such issue early if one
   exists, rather than relying on spotting it visually in a rendered figure again.
 
+## FLASH MRI was never actually absent, and Figure 8's real fix (2026-08-29)
+
+User review, again: "still not happy with the bem surfaces... find the parameters that were used
+to run watershed_bem in the published bem files" plus "Figure 8 still has different views than the
+original figure... these are 4 coronal views, posterior to anterior. slices=[40, 100, 140, 180]".
+Both leads were followed properly rather than patched over, and both uncovered real, previously
+wrong claims in this project's own documentation.
+
+**"Published watershed_bem parameters" don't exist -- the paper never used watershed.**
+`original_scripts/01-anatomy.py` (verbatim mirror) only ever calls `convert_flash_mris`/
+`make_flash_bem`. This project substituted watershed, justified by "FLASH multi-echo MRI isn't
+part of this ds000117 BIDS release" (`run_subject_anatomy.py`'s docstring, `GLITCHES.md`'s
+"Source-space onboarding" section) -- **that justification was wrong**. The search behind it ran
+`find ... -iname "*flash*"` over `study_path/ds117/*/anatomy/`, a scaffold directory that was never
+populated (00-fetch_data.py was skipped project-wide, Step 0) -- it would have found nothing there
+regardless of whether FLASH data exists. It does: the actual downloaded BIDS dataset
+(`/network/iss/cenir/analyse/meeg/BRAINLIFE/datasets/ds000117/sub-NN/ses-mri/anat/`) ships complete
+multi-echo FLASH data for every one of this project's 16 subjects (14 files each -- `run-1` = 5deg
+flip angle, `run-2` = 30deg, 7 echoes each, confirmed via the dataset's own sidecar JSONs). The
+files were present as **git-annex symlinks whose content had never been fetched** (`git annex get`
+had not been run for them) -- confirmed by finding the broken-symlink target
+(`.git/annex/objects/...`) didn't exist locally, then fetching successfully from `s3-PUBLIC` (a
+real, working remote, no auth needed) for both figure-illustration subjects (sub004, sub010).
+
+**Built the real thing**: `cluster/run_subject_flash_bem.py`, deliberately scoped to only the two
+subjects Figures 8/9 illustrate, not the full 16-subject group pipeline -- justified because
+`12-make_forward.py` only ever reads the 1-layer (inner-skull-only) BEM solution and coregistration
+doesn't fit against the outer-skin surface either (`hsp_weight=0`, see the coregistration section
+above), so the outer_skull/outer_skin quality problem below has never affected any already-computed
+forward/inverse/LCMV result -- it's a Figure 8/9 visual-fidelity issue only. Two real gaps hit and
+fixed along the way:
+- `make_flash_bem` needs `mri/brain.mgz` (skull-stripped brain), which this project's partial
+  recon-all derivatives don't ship (only `T1.mgz`/`aseg.mgz`). Synthesized as `T1.mgz` masked by
+  `aseg.mgz > 0` -- aseg is a real FreeSurfer segmentation already computed for these subjects, not
+  a guess, same class of substitution as the `sphere.reg` -> `sphere` symlink.
+- Passing raw NIfTI paths straight to `convert_flash_mris(flash5=[...])` lets it do a naive
+  nibabel load/save with no TR/TE/flip-angle metadata -- `mri_ms_fitparms` then fails outright
+  ("invalid TR or FA for image 0"). Fixed by pre-converting each echo via `mri_convert -tr 20 -te
+  1.85 -flip_angle <radians>` (values from the dataset's own FLASH sidecar JSONs), stamping the
+  header explicitly before handing off to `convert_flash_mris(flash5=True, flash30=True)`.
+
+**A third, more subtle issue was found and is NOT yet root-caused**: even with correct headers,
+`mri_ms_fitparms` logs `non-equal flip_angle found for the volume 7` (through 13) then
+`Flip_angle is set to zero` while combining the 5deg/30deg echoes -- on both sub004 and sub010
+(systematic, not a one-off). The resulting synthesized `flash5.mgz`/`flash5_reg.mgz` is usable
+enough for `mri_make_bem_surfaces`'s edge-based extraction (the BEM surfaces themselves came out
+well-separated, closely matching the reference's spacing) but looks visibly noisy/degraded as a
+*background image* -- confirmed with a direct 3-way render at a fixed slice (reference vs.
+watershed-on-T1 vs. FLASH-on-flash5_reg, `figures_jas/jas_fig8_3way_compare.png`). A manual retry
+passing explicit `-tr`/`-te`/`-fa` flags before each volume group (rather than relying on header
+auto-detection) was started to test whether that changes `mri_ms_fitparms`'s behavior, but did not
+finish within a 10-minute foreground budget and was not pursued further this session.
+
+**Resolution adopted (not blocked on the fitparms issue)**: a hybrid, not a compromise -- FLASH
+BEM surfaces (properly separated, the real published method) rendered on plain `T1.mgz` (clean
+contrast, closely matching the reference's own look) rather than on the noisy `flash5_reg.mgz`.
+Valid because `flash5_reg.mgz` was registered onto `T1.mgz`'s own grid (`fsl_rigid_register`), so
+the FLASH surfaces line up correctly on T1.mgz directly -- confirmed by rendering both before
+adopting this, not assumed. Both surface sets are kept on disk per subject for either figure
+subject: `bem/flash/*.surf` (FLASH, currently active in `bem/*.surf`) and
+`bem/watershed_backup_preflash/*.surf` (the original watershed output, kept as a fallback -- has
+the same near-coincident outer_skull/outer_skin problem the original "Watershed BEM neck/defacing
+investigation" section already ruled out fixing via preflood height, hence not the chosen path here
+either).
+
+**Figure 8's panel layout, resolved empirically, not by eye a second time**: the previous
+axial+coronal+coronal+"sagittal" layout was wrong (confirmed against the reference), but the user's
+correction ("4 coronal, posterior to anterior") also didn't match what panel 1 looked like by eye
+(round, no neck/jaw visible -- axial-looking). Rather than re-litigate this visually, built
+`figures_jas/jas_fig8_slice_search.py` / `jas_fig8_slice_search_watershed.py`: sweep ~75 coronal
+slice indices, render each (BEM contours on, index/orientation labels off, cropped tight to
+content), z-score normalize against each of the 4 reference panels (also cropped + normalized), and
+score with mean squared difference. Every panel's score curve came out with a single, clean
+interior minimum (not a boundary artifact of the sweep range) -- both against the (noisy)
+FLASH/flash5_reg render and, better, against the (clean) watershed/T1.mgz render, the one actually
+used for the final indices: **slices=[54, 87, 114, 141]**. Anatomical explanation for panel 1's
+axial-looking match: slice 54 sits far enough posterior that the coronal plane simply doesn't
+intersect the neck -- the same underlying geometric reason an axial slice near the vertex also
+misses it. Both search scripts and their diagnostic PNGs (`jas_fig8_slice_search*.png`) are kept as
+permanent, re-runnable evidence, not deleted after use.
+
 ## Other things noticed, not severity-ranked
 
 - `09-time_frequency.py`'s docstring says "Only channel 'EEG070' is used" but the code indexes

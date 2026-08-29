@@ -30,13 +30,22 @@ ds000117 BIDS release actually ships (checked directly, not assumed):
   4098 vertices/hemisphere, the correct count for this spacing -- a
   broken/degenerate substitute would very likely have produced something
   visibly wrong here (crash, or an obviously-off vertex count), not this.
-- **No FLASH-based BEM.** `convert_flash_mris`/`make_flash_bem` need
-  multi-echo FLASH MRI sequences -- confirmed absent from this dataset
-  (`find ... -iname "*flash*"` empty across all 16 subjects' `ds117/*/anatomy/`
-  trees). Substituted `mne.bem.make_watershed_bem()` (FreeSurfer's
-  `mri_watershed`, needs only `mri/T1.mgz`, present) -- the standard
-  fallback for exactly this situation, and what this repo's own
-  `make-watershed-bem` Brainlife app already does.
+- **Watershed BEM used for the 16-subject group pipeline** (`mne.bem.make_watershed_bem()`,
+  FreeSurfer's `mri_watershed`, needs only `mri/T1.mgz`, present) rather than
+  `convert_flash_mris`/`make_flash_bem`. CORRECTION (2026-08-29, see GLITCHES.md's "FLASH MRI was
+  never actually absent" section): this was originally justified by "FLASH multi-echo MRI is
+  confirmed absent from this dataset" -- that claim was WRONG. The `find` check behind it searched
+  `ds117/*/anatomy/`, a scaffold directory this project never populated (00-fetch_data.py was
+  skipped, Step 0) -- it would have found nothing there regardless. FLASH data is actually present
+  for every subject in the real downloaded BIDS tree
+  (`datasets/ds000117/sub-NN/ses-mri/anat/*_FLASH.nii.gz`), just as git-annex symlinks whose
+  content hadn't been fetched yet. `cluster/run_subject_flash_bem.py` now builds the real FLASH BEM
+  for the two subjects Figures 8/9 illustrate (sub004, sub010) -- watershed remains in use here,
+  for the full 16-subject group pipeline, because forward/inverse only ever reads the 1-layer
+  (inner-skull-only) solution and coregistration doesn't use the outer-skin surface either
+  (`hsp_weight=0`), so watershed's own known outer_skull/outer_skin quality issue has never affected
+  any group-level scientific result -- only Figure 8/9's own visual fidelity, which is what
+  `run_subject_flash_bem.py` fixes for those two illustration subjects specifically.
 - **Only the 1-layer BEM model/solution is built** (conductivity=(0.3,)),
   not the 3-layer one the original script also builds. `12-make_forward.py`
   only ever reads the 1-layer solution anyway -- its own comment says the
