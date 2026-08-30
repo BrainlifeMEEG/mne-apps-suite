@@ -47,7 +47,7 @@ from library.config import subjects_dir  # noqa: E402
 SUBJECT = "sub004"
 T1 = os.path.join(subjects_dir, SUBJECT, "mri", "T1.mgz")
 
-INDICES = list(range(15, 241, 6))
+INDICES = list(range(15, 241, 1))
 NCOLS = 8
 
 TMP_PNG = os.path.join(HERE, "_tmp_contact_sheet_panel.png")
