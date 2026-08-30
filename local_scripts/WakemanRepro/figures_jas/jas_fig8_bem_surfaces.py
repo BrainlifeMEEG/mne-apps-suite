@@ -29,29 +29,20 @@ BEM method: a deliberate hybrid, arrived at empirically, not guessed.
   later; not blocking here since the surfaces themselves are unaffected by
   which background they're drawn on.
 
-Panels: all 4 coronal, posterior to anterior, at slices=[39, 87, 99, 150].
-Found by direct visual comparison against the reference panels
-(`jas_fig8_slice_contact_sheet.py`'s contact sheet), not a numeric proxy --
-three automated matching attempts
-(`jas_fig8_slice_search{,_watershed,_shape,_combined}.py`) each failed in
-a different way (see GLITCHES.md's "Figure 8 slice matching: four
-attempts" section), most visibly by picking slice 54 for panel 1, which
-DOES show a neck at full resolution despite looking neck-free in a small
-normalized thumbnail. Slice 39 was then sanity-checked quantitatively for
-the "closed round shape, no neck" criterion specifically: its
-largest-connected-component bounding box (width, height as fractions of
-frame size) is (0.453, 0.545) vs. the reference panel's (0.471, 0.562) --
-within 2% on both axes, both cleanly neck-free. Panels 2/3 (87, 99) also
-directly confirmed against the reference's ventricle shape and gyral
-pattern (deep bilateral scalloping + visible lateral ventricles for panel
-2; ventricles gone, single central notch, defacing just starting for
-panel 3). Panel 4 (150) matches the reference's general character
-(temporal-lobe double-bump, similar black-wedge extent, a disconnected
-outer-skin fragment below) but not its exact fragment shape (ours comes
-out as a crossed figure-8, the reference's is a single clean oval) --
-tried neighboring slices, none did better; treated as an inherent
-idiosyncrasy of this dataset's own defacing pattern, not something to
-keep chasing.
+Panels: all 4 coronal, posterior to anterior, at slices=[40, 100, 140, 180]
+-- the user's own originally-specified default, reinstated after an
+extensive slice-matching investigation (four different methods tried,
+three automated, one visual+quantitative-sanity-check hybrid; see
+GLITCHES.md's "Figure 8 slice matching: four attempts" section and its
+follow-up) ran into a hard ceiling: even a spatially-verified-correct
+T1.mgz (confirmed via a fresh `mri_convert --conform` of the actual raw
+MPRAGE against the FreeSurfer-derivative one already in use -- same
+affine, same world-space center, so not a wrong/misaligned image) can't
+be expected to have identical slice-index-to-anatomy correspondence to
+whatever FreeSurfer version the original 2018 paper used, which this
+project has no way to reproduce exactly. Chasing a closer numeric match
+past that point has diminishing, possibly illusory returns -- reverted to
+the simple, user-specified indices rather than keep iterating.
 
 Subject: same "paper subject 4" = openfMRI sub004 = BIDS sub-03 crosswalk
 as Figure 10 (see that script's docstring for the full chain of evidence).
@@ -86,9 +77,8 @@ SUBJECT = "sub004"  # paper "subject 4" -- see crosswalk note above
 T1 = os.path.join(subjects_dir, SUBJECT, "mri", "T1.mgz")
 
 # Coronal slice indices for the paper's 4 panels, left to right, posterior
-# to anterior -- found by direct visual comparison (see docstring), not a
-# numeric proxy.
-SLICES = [39, 87, 99, 150]
+# to anterior -- the user's own originally-specified default (see docstring).
+SLICES = [40, 100, 140, 180]
 
 panel_pngs = []
 for i, slice_idx in enumerate(SLICES):
