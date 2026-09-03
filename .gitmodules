@@ -231,3 +231,9 @@
 [submodule "autoreject"]
 	path = autoreject
 	url = https://github.com/BrainlifeMEEG/autoreject.git
+[submodule "gedai"]
+	path = gedai
+	url = https://github.com/BrainlifeMEEG/gedai.git
+[submodule "gedai-epo"]
+	path = gedai-epo
+	url = https://github.com/BrainlifeMEEG/gedai-epo.git
