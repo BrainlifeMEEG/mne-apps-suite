@@ -452,14 +452,21 @@ def run_subject_chain(catalog, subject, runs, state, dry_run):
         # AutoReject class, not the local pipeline's
         # `get_rejection_threshold()`. Using the app's own reasonable
         # defaults here (random_state=42 to at least match that one param).
+        # n_jobs=8 passed explicitly (self-documenting) though it turns out
+        # to be redundant -- checked the actual submitted config on a real
+        # timed-out task: n_jobs was already 8 via the app's own registered
+        # schema default (matching --cpus-per-task=8), not silently 1 as
+        # first assumed. The real problem/fix was visibility, not
+        # parallelism: verbose=False + no `-u` made a genuinely multi-hour
+        # (4+, still progressing) CV search indistinguishable from a hang
+        # until it hit the old 2h walltime -- see autoreject commit 17cfdd6.
         clean_epo_out = app_step(
             runner, state, f"S{subject}:run{run}:autoreject", "autoreject",
             dataset_ids=[epo_out],
-            config={"random_state": 42},
+            config={"random_state": 42, "n_jobs": 8},
             tags=[f"S{subject}", f"run{run}"], instance_name=instance_name, dry_run=dry_run,
-            timeout_s=10800,  # full AutoReject CV search: real run still
-            # going strong past 1h on the ICM cluster (148 epochs loaded,
-            # genuinely progressing, not stuck) -- generous headroom.
+            timeout_s=10800,  # generous headroom; the app's own Slurm
+            # walltime (8h, bumped from 2h) is the real cap now anyway.
         )
         clean_epochs_out[run] = clean_epo_out
 
