@@ -186,7 +186,7 @@ APPS = {
 
 def app_step(runner, state, step_key, stage_name, dataset_ids, config,
             tags, instance_name, dry_run, output_id="out_dir", input_id=None,
-            direct_deps=True):
+            direct_deps=True, timeout_s=3600):
     """Thin wrapper around PipelineRunner.run_step, using APPS' resolved
     (app_id, branch, input_id) for `stage_name` unless input_id is
     overridden (needed when an app has more than one required input, e.g.
@@ -223,6 +223,7 @@ def app_step(runner, state, step_key, stage_name, dataset_ids, config,
         dry_run=dry_run,
         output_id=output_id,
         direct_deps=direct_deps,
+        timeout_s=timeout_s,
     )
 
 
@@ -373,6 +374,7 @@ def run_subject_chain(catalog, subject, runs, state, dry_run):
         config={"method": "fastica", "n_components": 20, "decim": 11,
                 "l_freq": 1, "h_freq": 40, "random_state": 42},
         tags=[f"S{subject}"], instance_name=instance_name, dry_run=dry_run,
+        timeout_s=10800,  # real fit at 0.999 took 67min; generous headroom
     )
 
     clean_epochs_out = {}
@@ -455,6 +457,9 @@ def run_subject_chain(catalog, subject, runs, state, dry_run):
             dataset_ids=[epo_out],
             config={"random_state": 42},
             tags=[f"S{subject}", f"run{run}"], instance_name=instance_name, dry_run=dry_run,
+            timeout_s=10800,  # full AutoReject CV search: real run still
+            # going strong past 1h on the ICM cluster (148 epochs loaded,
+            # genuinely progressing, not stuck) -- generous headroom.
         )
         clean_epochs_out[run] = clean_epo_out
 
