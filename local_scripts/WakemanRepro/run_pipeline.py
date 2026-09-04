@@ -186,30 +186,33 @@ APPS = {
 
 def app_step(runner, state, step_key, stage_name, dataset_ids, config,
             tags, instance_name, dry_run, output_id="out_dir", input_id=None,
-            direct_deps=True, timeout_s=3600):
+            direct_deps=False, timeout_s=3600):
     """Thin wrapper around PipelineRunner.run_step, using APPS' resolved
     (app_id, branch, input_id) for `stage_name` unless input_id is
     overridden (needed when an app has more than one required input, e.g.
     ICA-apply's fif+ica or noise-covariance's epochs+...).
 
-    direct_deps=True by default -- per the user's own reminder (2026-09-01)
-    and BrainlifePipelineCLI's README: without it, every single app run
-    re-stages its input from archive storage even when it's immediately
-    consuming the previous step's own output within the same instance, an
-    unnecessary "Data Staging Task" + archive re-read per chained step.
-    Confirmed working end-to-end for freshly-chained same-run outputs
-    (ICA-fit -> ICA-apply -> epoch, 2026-09-03).
-
-    BUT: having prov.task/prov.subdir on a dataset (true for every app-task
-    output and every `bl data upload`ed dataset -- direct_deps' own
-    precondition) does NOT guarantee that task's ephemeral compute workdir
-    still exists -- confirmed on the ICM cluster: fif2mne consuming the
-    project's original proc-sss UPLOAD (months old) failed 4/4 with
-    "Dependency removed", the exact "referenced workdir is gone" failure
-    mode, despite proc-sss carrying real provenance fields. direct_deps is
-    only actually safe for a task produced earlier in the SAME run, not for
-    old/pre-existing datasets -- callers touching proc-sss or any other
-    already-archived-a-while-ago dataset should pass direct_deps=False."""
+    direct_deps=False by default (2026-09-04, reversed from an earlier
+    True default). It skips the CLI's normal /dataset/stage round-trip and
+    references an input dataset's producing task directly (via its own
+    prov.task/prov.subdir) instead of a freshly-staged copy -- avoids a
+    redundant "Data Staging Task" + archive re-read per chained step, per
+    the user's own reminder (2026-09-01) and BrainlifePipelineCLI's README.
+    Was confirmed working for one chain (ICA-fit -> ICA-apply -> epoch,
+    2026-09-03) but is NOT reliably safe: having prov.task/prov.subdir on a
+    dataset (direct_deps' own precondition, true for every app-task output
+    and every `bl data upload`ed dataset) does not guarantee that task's
+    ephemeral compute workdir still exists by the time a downstream step
+    tries to read it. Confirmed failing 3 separate times on the ICM
+    cluster with "Dependency removed"/FileNotFoundError on the referenced
+    workdir: fif2mne consuming the project's original proc-sss upload
+    (months old); and -- the case that settled it -- average-erp
+    immediately consuming autoreject's own output in the SAME run, where
+    the dataset's own prov.task really did match the just-finished
+    autoreject task (verified directly against the Warehouse API, not a
+    stale/wrong reference). "Only safe for same-run fresh outputs" doesn't
+    hold up either, apparently. Pass direct_deps=True per-call only where
+    it's been separately re-verified for that specific hop."""
     app_id, branch, declared_input_id = APPS[stage_name]
     return runner.run_step(
         state, STATE_FILE,
