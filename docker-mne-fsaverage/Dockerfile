@@ -18,19 +18,14 @@ FROM brainlifemeeg/mne:1.12.1
 ENV MNE_DATA=/opt/mne_data
 ENV SUBJECTS_DIR=/opt/mne_data/subjects
 
-# Single RUN, self-contained: the download, and the removal of the parts a
-# template forward solution never touches, land in one layer with nothing after
+# Single RUN, self-contained: the download lands in one layer with nothing after
 # it touching the same files (see docker-mne/README.md for why that matters).
-# make_forward_solution(trans='fsaverage', src=<...-ico-5-src.fif>,
-# bem=<...-bem-sol.fif>) reads only bem/ ; surf/, label/, mri/, stats/ are for
-# surface/label analyses this image is not for.
+# The full fsaverage subject dir is kept -- fetch_fsaverage() re-downloads the
+# whole thing if any expected subdir (surf/, label/, ...) is missing, and would
+# then hit the read-only container filesystem.
+#
+# Also update the README "surf/label/mri stripped" note if you change this.
 RUN python3 -c "from pathlib import Path; import mne; \
-mne.datasets.fetch_fsaverage(subjects_dir=Path('${SUBJECTS_DIR}'), verbose=True)" && \
-    rm -rf "${SUBJECTS_DIR}/fsaverage/surf" \
-           "${SUBJECTS_DIR}/fsaverage/label" \
-           "${SUBJECTS_DIR}/fsaverage/mri" \
-           "${SUBJECTS_DIR}/fsaverage/mri.2mm" \
-           "${SUBJECTS_DIR}/fsaverage/stats" \
-           "${SUBJECTS_DIR}/fsaverage/scripts"
+mne.datasets.fetch_fsaverage(subjects_dir=Path('${SUBJECTS_DIR}'), verbose=True)"
 
 CMD ["python3"]

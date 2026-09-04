@@ -28,8 +28,8 @@ a walltime-constrained job — the same failure class the un-cached
 
 That image (8.4 GB) also has fsaverage, but carries a full FreeSurfer 7.4.1
 install (CentOS userland, `recon-all`, `mkheadsurf`, watershed BEM) and Qt
-surface-rendering deps. This image is ~1.3 GB: `brainlifemeeg/mne` (509 MB) plus
-the fsaverage data files, no binaries. Use `mne-freesurfer` when an app actually
+surface-rendering deps. This image is ~1.5 GB compressed (brainlifemeeg/mne 509 MB + ~760 MB of
+fsaverage data files, no binaries). Use `mne-freesurfer` when an app actually
 needs `recon-all` / `mkheadsurf` / watershed BEM / `pyvistaqt` brain surfaces
 (`make-watershed-bem`, the coreg/forward/source-estimate apps); use this image
 for template-forward work on the lean base.
