@@ -15,10 +15,11 @@ The pipeline itself is subject-agnostic: SUBJECT_MATCH below is the ONLY
 place a subject is named anywhere in this design. Every other rule scopes
 itself purely via tag-chaining (each stage's output_tags feed the next
 stage's input_tags) -- broadening scope to another subject or all of them
-later means editing SUBJECT_MATCH (and, unavoidably, MARK_BAD_RAW's own
-per-run bad-channel config, which is genuinely subject-specific data the
-platform has no way to look up dynamically at rule-fire time), not
-rebuilding anything else.
+later means editing SUBJECT_MATCH alone. mark-bad-raw's bad-channel data
+used to be an exception (baked per-subject into rule config) -- fixed
+2026-09-04: bad-channel lists are now uploaded neuro/meg/fif-override
+channels.tsv datasets (see upload_bad_channels.py), wired in via a real
+`channels` input_tags match, so this stage is subject-agnostic too.
 
 Per-run stages are created once per run (6 separate rule objects each,
 following the proven S05 precedent in
@@ -35,11 +36,11 @@ reading the S05 script directly: the WORKING pattern for "don't wire this
 optional input" is `input_selection={"<id>": False}` (boolean, not the
 string "ignore" the same script's own unapplied epoch fix suggested and
 which was never actually confirmed working). Used here for:
-  - mark-bad-raw's optional `channels` input (no channels.tsv available)
   - noise-covariance's `empty-room`/`evoked`/`ica` optional inputs (using
     only `epochs`)
-epoch's own optional `events` input IS wired here (real input_tags), since
-this pipeline's proven design uses it.
+epoch's own optional `events` input, and (as of 2026-09-04) mark-bad-raw's
+own optional `channels` input, ARE wired here (real input_tags), since
+this pipeline's proven design uses both.
 
 Usage:
     python3 setup_pipeline_rules.py --dry-run     # print all payloads, create nothing
@@ -55,7 +56,7 @@ from create_pipeline_rule import create_rule, list_rules, set_pipeline  # noqa: 
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_pipeline import (  # noqa: E402
-    APPS, EVENT_ID_CONDITION_MAPPING, FIF2MNE_CHANNEL_FIX, read_bad_channels,
+    APPS, EVENT_ID_CONDITION_MAPPING, FIF2MNE_CHANNEL_FIX,
     PROJECT,
 )
 
@@ -153,17 +154,18 @@ def main():
          input_tags={"fif": ["concat-out"]},
          output_tags={"out_dir": ["ica-fit-out"]})
 
-    # --- Stage 6: mark-bad-raw. Per-subject/run bad-channel list -- this
-    # is genuinely subject-specific data baked into each rule's config at
-    # creation time (the platform has no way to look this up dynamically
-    # at fire time), unlike every other stage here. channels input
-    # explicitly not wired (no channels.tsv available for this project).
+    # --- Stage 6: mark-bad-raw. Bad-channel lists now come from uploaded
+    # neuro/meg/fif-override channels.tsv datasets (tagged bad-channels +
+    # run-NN, one per subject/run -- see upload_bad_channels.py), wired via
+    # a real `channels` input_tags match on run alone (subject pairing is
+    # automatic via meta.subject/meta.session, per the user). No more
+    # `bads` config / read_bad_channels() -- that was the one genuinely
+    # subject-specific piece of this whole pipeline, now fixed.
     for run in RUNS:
-        bad_channels = read_bad_channels("09", run)
         make(existing, created, "mark-bad-raw", f"mark-bad-raw - run{run}", "mark-bad-raw",
-             config={"bads": ",".join(bad_channels), "reset_bads": False},
-             input_tags={"fif": ["filt-raw-lowpass40", f"run-{run}"]},
-             input_selection={"channels": False},
+             config={"reset_bads": False},
+             input_tags={"fif": ["filt-raw-lowpass40", f"run-{run}"],
+                         "channels": ["bad-channels", f"run-{run}"]},
              output_tags={"out_dir": ["mark-bad-out", f"run-{run}"]})
 
     # --- Stage 7: ICA-apply (two real inputs: the marked raw + the fitted
