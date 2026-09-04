@@ -124,22 +124,22 @@ def main():
     # chain, highpass=1Hz for ICA-fit only -- see run_pipeline.py's own
     # module docstring for why both are needed)
     for run in RUNS:
-        make(existing, created, "filter-raw (highpass-None)",
+        make(existing, created, "filter-raw (lowpass 40Hz)",
              f"filter-raw highpass-None - run{run}", "filter-raw",
              config={"l_freq": None, "h_freq": 40},
              input_tags={"fif": ["fif2mne-out", f"run-{run}"]},
-             output_tags={"out_dir": ["filt-raw-none", f"run-{run}"]})
+             output_tags={"out_dir": ["filt-raw-lowpass40", f"run-{run}"]})
 
-        make(existing, created, "filter-raw (highpass-1Hz)",
+        make(existing, created, "filter-raw (bandpass 1-40Hz)",
              f"filter-raw highpass-1Hz - run{run}", "filter-raw",
              config={"l_freq": 1, "h_freq": 40},
              input_tags={"fif": ["fif2mne-out", f"run-{run}"]},
-             output_tags={"out_dir": ["filt-raw-1hz", f"run-{run}"]})
+             output_tags={"out_dir": ["filt-raw-bandpass1-40", f"run-{run}"]})
 
     # --- Stage 4: concat (subject-level fan-in, exactly 6 runs)
     make(existing, created, "concat", "concat", "concat",
          config={},
-         input_tags={"raw": ["filt-raw-1hz"]},
+         input_tags={"raw": ["filt-raw-bandpass1-40"]},
          input_multicount={"raw": "6"},
          output_tags={"out_dir": ["concat-out"]})
 
@@ -162,7 +162,7 @@ def main():
         bad_channels = read_bad_channels("09", run)
         make(existing, created, "mark-bad-raw", f"mark-bad-raw - run{run}", "mark-bad-raw",
              config={"bads": ",".join(bad_channels), "reset_bads": False},
-             input_tags={"fif": ["filt-raw-none", f"run-{run}"]},
+             input_tags={"fif": ["filt-raw-lowpass40", f"run-{run}"]},
              input_selection={"channels": False},
              output_tags={"out_dir": ["mark-bad-out", f"run-{run}"]})
 
