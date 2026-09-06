@@ -202,10 +202,21 @@ def main():
     # conditions in one Evoked file (the multi-condition support just
     # added this session), where the old driver needed 3 separate
     # per-condition submissions before that existed.
+    #
+    # scrambled/famous,scrambled/unfamiliar was WRONG -- confirmed via a
+    # real failed task's own error message: "scrambled/famous" doesn't
+    # exist as an event name. Only face trials have a famous/unfamiliar
+    # split (EVENT_ID_CONDITION_MAPPING's real 9 conditions:
+    # face/{famous,unfamiliar}/{first,immediate,long}, and just
+    # scrambled/{first,immediate,long} -- no famous/unfamiliar for
+    # scrambled, since a scrambled image has no identity). Fixed to plain
+    # "scrambled", which pools all 3 scrambled/* sub-conditions via the
+    # same partial-tag matching "face/famous,face/unfamiliar" already
+    # relies on.
     for run in RUNS:
         make(existing, created, "average-erp", f"average-erp - run{run}", "average-erp",
              config={"average_all": False,
-                     "stimulus_names": "face/famous,face/unfamiliar;scrambled/famous,scrambled/unfamiliar",
+                     "stimulus_names": "face/famous,face/unfamiliar;scrambled",
                      "condition": "face;scrambled", "peaks": "None"},
              input_tags={"evoked": ["autoreject-out", f"run-{run}"]},
              output_tags={"out_dir": ["average-erp-out", f"run-{run}"]})
