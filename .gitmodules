@@ -237,3 +237,27 @@
 [submodule "gedai-epo"]
 	path = gedai-epo
 	url = https://github.com/BrainlifeMEEG/gedai-epo.git
+[submodule "noise-covariance"]
+	path = noise-covariance
+	url = https://github.com/BrainlifeMEEG/noise-covariance.git
+[submodule "make-bem"]
+	path = make-bem
+	url = https://github.com/BrainlifeMEEG/make-bem.git
+[submodule "coreg"]
+	path = coreg
+	url = https://github.com/BrainlifeMEEG/coreg.git
+[submodule "source-space"]
+	path = source-space
+	url = https://github.com/BrainlifeMEEG/source-space.git
+[submodule "forward"]
+	path = forward
+	url = https://github.com/BrainlifeMEEG/forward.git
+[submodule "inverse-operator"]
+	path = inverse-operator
+	url = https://github.com/BrainlifeMEEG/inverse-operator.git
+[submodule "source-estimate"]
+	path = source-estimate
+	url = https://github.com/BrainlifeMEEG/source-estimate.git
+[submodule "label-timecourse"]
+	path = label-timecourse
+	url = https://github.com/BrainlifeMEEG/label-timecourse.git
